@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "../components/Header";
 import ThemeProviderWrapper from "@/components/ThemeProviderWrapper";
 
 export const metadata: Metadata = {
@@ -14,7 +13,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en">
       <body>
         <ThemeProviderWrapper>
-          <Header>{children}</Header>
+          {children}
         </ThemeProviderWrapper>
       </body>
     </html>
