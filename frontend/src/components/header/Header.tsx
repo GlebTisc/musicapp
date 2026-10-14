@@ -50,7 +50,7 @@ export default function Header({children}: {children: React.ReactNode})
     };
 
     return (<Box sx={{display: "flex", flexDirection: "column", minHeight: '100vh'}}>
-        <AppBar position="static">
+        <AppBar position="fixed" sx={{boxShadow: "none"}}>
             <Toolbar variant="dense" sx={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
                 <Box component="div" sx={{
                     minWidth: "200px",
@@ -68,6 +68,9 @@ export default function Header({children}: {children: React.ReactNode})
                     <Typography
                         variant="h6"
                         component="div"
+                        sx={{
+                            color: "secondary.main"
+                        }}
                     >
                         CloudMusic
                     </Typography>
@@ -76,6 +79,7 @@ export default function Header({children}: {children: React.ReactNode})
                 <ProfileButton />
             </Toolbar>
         </AppBar>
+        <Toolbar variant="dense" />
         <Box sx={{display: "flex", flexGrow: 1}}>
             <HeaderDrawer
                 isDesktop = {isDesktop}

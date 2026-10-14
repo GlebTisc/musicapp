@@ -1,6 +1,6 @@
 FROM php:8.4-apache
 
-# Установка системных зависимостей и расширений PHP
+# PHP and dependencies
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
@@ -8,24 +8,24 @@ RUN apt-get update && apt-get install -y \
     curl \
     && docker-php-ext-install zip
 
-# Установка MongoDB драйвера
+# MongoDB driver
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Включение mod_rewrite для Apache
+# Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Установка Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Копирование файлов приложения
+# copy files of the application
 COPY . /var/www/html
 
-# Установка прав доступа
-#RUN chown -R www-data:www-data /var/www/html \
-#    && chmod -R 755 /var/www/html/storage \
-#    && chmod -R 755 /var/www/html/bootstrap/cache
+# Add permissions
+RUN chown -R www-data:www-data /var/www/html \
+   && chmod -R 755 /var/www/html/storage \
+   && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Конфигурация виртуального хоста Apache
+# Apache vhost
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html

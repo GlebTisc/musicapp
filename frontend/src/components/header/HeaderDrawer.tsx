@@ -1,7 +1,7 @@
 "use client"
 
 import { mainTheme } from "@/themes/theme";
-import { Drawer, useMediaQuery } from "@mui/material";
+import { Drawer, Toolbar, useMediaQuery } from "@mui/material";
 import { useState } from "react";
 
 interface HeaderDrawerProps {
@@ -11,6 +11,8 @@ interface HeaderDrawerProps {
     onClose: () => void;
     onTransitionEnd: () => void;
 }
+
+const APP_BAR_HEIGHT = "48px";
 
 export default function HeaderDrawer({children, isDesktop, isOpen, onClose, onTransitionEnd}:  HeaderDrawerProps)
 {
@@ -31,7 +33,10 @@ export default function HeaderDrawer({children, isDesktop, isOpen, onClose, onTr
                 }),
                 '& .MuiDrawer-paper': {
                     width: drawerWidth,
-                    position: 'relative',
+                    position: 'fixed',
+                    top: APP_BAR_HEIGHT,
+                    height: `calc(100% - ${APP_BAR_HEIGHT})`,
+                    overflowY: "auto",
                     whiteSpace: 'nowrap',
                     boxSizing: 'border-box',
                 },
@@ -50,6 +55,7 @@ export default function HeaderDrawer({children, isDesktop, isOpen, onClose, onTr
                 '& .MuiDrawer-paper': {
                     width: drawerWidth,
                     boxSizing: 'border-box',
+                    top: APP_BAR_HEIGHT
                 },
             }}
         >

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # ========== NGINX (Обратный прокси) ==========
+  # ========== NGINX ==========
   nginx:
     image: nginx:alpine
     container_name: music-nginx
@@ -38,6 +38,7 @@ services:
       - DB_PASSWORD=root
     volumes:
       - ./backend/api-gateway:/var/www/html
+      - /var/www/html/vendor
     depends_on:
       - mongodb
       - user-service
@@ -87,6 +88,7 @@ services:
       - DB_PASSWORD=root
     volumes:
       - ./backend/music-service:/var/www/html
+      - /var/www/html/vendor
     depends_on:
       - mongodb
     networks:
@@ -120,7 +122,7 @@ services:
     networks:
       - music-network
 
-  # ========== MONGO-EXPRESS (Веб-интерфейс для MongoDB) ==========
+  # ========== MONGO-EXPRESS (WEB-interface) ==========
   mongo-express:
     image: mongo-express:latest
     container_name: music-mongo-express
@@ -135,7 +137,7 @@ services:
     networks:
       - music-network
 
-  # ========== REDIS (Кэш) ==========
+  # ========== REDIS ==========
   redis:
     image: redis:alpine
     container_name: music-redis
