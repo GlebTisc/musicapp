@@ -101,10 +101,10 @@ services:
       dockerfile: Dockerfile
     container_name: music-frontend
     ports:
-      - "3000:5173"
+      - "3000:3000"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     networks:
       - music-network
 
@@ -152,3 +152,4 @@ networks:
 
 volumes:
   mongodb-data:
+  frontend_node_modules:
