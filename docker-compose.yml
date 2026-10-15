@@ -30,12 +30,6 @@ services:
       - APP_URL=http://localhost:8001
       - USER_SERVICE_URL=http://user-service:3000
       - MUSIC_SERVICE_URL=http://music-service:80
-      - DB_CONNECTION=mongodb
-      - DB_HOST=mongodb
-      - DB_PORT=27017
-      - DB_DATABASE=gateway_db
-      - DB_USERNAME=root
-      - DB_PASSWORD=root
     volumes:
       - ./backend/api-gateway:/var/www/html
       - /var/www/html/vendor
