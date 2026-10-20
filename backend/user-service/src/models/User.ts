@@ -19,6 +19,8 @@ const userSchema = new Schema<User>({
     username: {
         type: String,
         required: [true, "Username is required"],
+        min: 2,
+        max: 50,
         unique: true,
         trim: true
     },
@@ -26,6 +28,8 @@ const userSchema = new Schema<User>({
         type: String,
         required: [true, "Password is required"],
         minlength: [8, "Password should contain at least 8 characters"],
+        min: 8,
+        max: 128,
         select: false
     },
     role: {

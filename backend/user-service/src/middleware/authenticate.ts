@@ -7,20 +7,19 @@ import User from '../models/User';
 import config from '../config';
 
 export const authenticate = catchAsync(
-    async (req, _res: Response, next: NextFunction) => {
-        const header = req.headers.authorization;
+    async (req, res: Response, next: NextFunction) => {
+        const accessToken = req.cookies?.accessToken;
 
         // check if bearer token exists
-        if (!header?.startsWith('Bearer')) {
+        if (!accessToken) {
             throw new AppError('You are not logged in!', 401, 'Authentication error');
         }
 
-        const token = header.split(' ')[1];
-        const decoded = jwt.verify(token, config.jwt.secret);
+        const decoded = jwt.verify(accessToken, config.jwt.secret);
 
         // check the type of decoded tocken
         if (!isTokenPayload(decoded)) {
-            throw new AppError('Invalid token payload', 401, 'AuthenticationError');
+            throw new AppError('Invalid token payload', 401, 'Authentication Error');
         }
 
         const currentUser = await User.findById(decoded.id);

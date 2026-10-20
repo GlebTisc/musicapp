@@ -51,9 +51,10 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - MONGO_URI=mongodb://root:root@mongodb:27017/users_db?authSource=admin
-      - JWT_SECRET=your-super-secret-jwt-key
-      - JWT_EXPIRE=7d
+      - MONGO_URI=mongodb://root:${MONGO_ROOT_PASSWORD}@mongodb:27017/users_db?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_EXPIRE=${JWT_REFRESH_EXPIRE}
+      - JWT_ACCESS_EXPIRE=${JWT_ACCESS_EXPIRE}
     volumes:
       - ./backend/user-service:/app
       - /app/node_modules
@@ -110,7 +111,7 @@ services:
       - "27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
     volumes:
       - mongodb-data:/data/db
     networks:
@@ -124,8 +125,10 @@ services:
       - "8081:8081"
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_ROOT_PASSWORD}
       - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=localuser
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_EXPRESS_PASSWORD}
     depends_on:
       - mongodb
     networks:
