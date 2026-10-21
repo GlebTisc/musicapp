@@ -1,12 +1,16 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import * as authService from '../services/authService';
 import { catchAsync } from '../utils/catchAsync';
 import { getValidated } from '../middleware/validate';
+import { AppError } from '../utils/AppError';
 import type { RegisterDTO, LoginDTO } from '../services/authService';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
 
+/**
+ * Register user
+ */
 export const register = catchAsync(
-    async (req, res: Response) => {
+    async (req: Request, res: Response) => {
         const validatedData = getValidated<RegisterDTO>(req);
         const { user, accessToken, refreshToken } = await authService.register(validatedData);
         setAccessTokenCookie(res, accessToken);
@@ -15,12 +19,33 @@ export const register = catchAsync(
     }
 );
 
+/**
+ * Login user
+ */
 export const login = catchAsync(
-    async (req, res: Response) => {
+    async (req: Request, res: Response) => {
         const validatedData = getValidated<LoginDTO>(req);
         const { user, accessToken, refreshToken } = await authService.login(validatedData);
         setAccessTokenCookie(res, accessToken);
         setRefreshTokenCookie(res, refreshToken);
+        res.status(200).json({ status: 'success', data: user });
+    }
+);
+
+/**
+ * Validate access token
+ */
+export const validate = catchAsync(
+    async (req: Request, res: Response) => {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            throw new AppError('Access token not provided', 401, 'AuthenticationError');
+        }
+
+        const accessToken = authHeader.split(' ')[1];
+        const user = await authService.validateAccessToken(accessToken);
+
         res.status(200).json({ status: 'success', data: user });
     }
 );

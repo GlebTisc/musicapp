@@ -20,5 +20,6 @@ export class AppError extends Error {
         this.details = details;
 
         Error.captureStackTrace(this, this.constructor);
+        this.name = this.constructor.name;
     }
 }

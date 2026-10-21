@@ -5,7 +5,7 @@ import { AppError } from '../utils/AppError';
 import { createTokenPair } from './refreshTokenService';
 import config from '../config';
 import type { ValidationError } from '../utils/AppError';
-import { decode } from 'node:punycode';
+import { isTokenPayload } from '../utils/typeguards';
 
 export const RegisterSchema = z.object({
     email: z.email('Invalid email format'),
@@ -51,6 +51,12 @@ export const extractUserFields = (user: User) => ({
 
 const createTokens = (id: string) => createTokenPair(id);
 
+/**
+ * Register function
+ * 
+ * @param data 
+ * @returns 
+ */
 export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
     const existingUser = await UserModel.findOne({ email: data.email });
     if (existingUser) {
@@ -66,6 +72,12 @@ export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
     return { ...tokens, user: extractUserFields(user) };
 };
 
+/**
+ * Login function
+ * 
+ * @param data 
+ * @returns 
+ */
 export const login = async (data: LoginDTO): Promise<AuthResponse> => {
     const user = await UserModel.findOne({ username: data.username }).select('+password');
 
@@ -84,11 +96,16 @@ export const login = async (data: LoginDTO): Promise<AuthResponse> => {
  * @returns 
  */
 export const validateAccessToken = async (accessToken: string) => {
-    const decoded = jwt.verify(accessToken, config.jwt.secret) as { id: string };
+    const decoded = jwt.verify(accessToken, config.jwt.secret);
 
     // check if payload exists
     if (!decoded) {
-        throw new AppError('Invalid payload data', 401, 'InvalidTokenError')
+        throw new AppError('Invalid payload data', 401, 'InvalidTokenError');
+    }
+
+    // check if token payload is valid
+    if (!isTokenPayload(decoded)) {
+        throw new AppError('Invalid payload data', 401, 'InvalidTokenError');
     }
 
     const user = await UserModel.findById(decoded.id);

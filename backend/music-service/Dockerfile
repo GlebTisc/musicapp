@@ -1,31 +1,38 @@
 FROM php:8.4-apache
 
-# Установка системных зависимостей и расширений PHP
+# install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    libcurl4-openssl-dev \
     libzip-dev \
     unzip \
-    git \
     curl \
+    && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-install zip
 
-# Установка MongoDB драйвера
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+# install MongoDb
+RUN curl -fsSL https://github.com/mongodb/mongo-php-driver/releases/download/1.21.0/mongodb-1.21.0.tgz | tar xvz -C /tmp \
+    && cd /tmp/mongodb-1.21.0 \
+    && phpize \
+    && ./configure \
+    && make -j$(nproc) \
+    && make install \
+    && docker-php-ext-enable mongodb \
+    && cd / \
+    && rm -rf /tmp/mongodb-1.21.0
 
-# Включение mod_rewrite для Apache
+# enable mod_rewrite for Apache
 RUN a2enmod rewrite
 
-# Установка Composer
+# install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Копирование файлов приложения
+# copy application files
 COPY . /var/www/html
 
-# Установка прав доступа
-#RUN chown -R www-data:www-data /var/www/html \
-#    && chmod -R 755 /var/www/html/storage \
-#    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Конфигурация виртуального хоста Apache
+# configure Apache vhost
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html
