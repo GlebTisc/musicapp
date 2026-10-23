@@ -4,8 +4,8 @@ import helmet from 'helmet';
 import config from './config';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
-import { AppError } from './utils/AppError';
 import cookieParser from 'cookie-parser';
+import { NotFoundError } from './utils/errors';
 
 const app: Application = express();
 
@@ -31,7 +31,7 @@ app.use(cookieParser())
 app.use('/api', routes);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
-    next(new AppError(`Can't find ${req.originalUrl} on this server`, 404, 'Not Found Error'));
+    next(new NotFoundError(`Can't find ${req.originalUrl} on this server`));
 });
 
 app.use(errorHandler);

@@ -1,4 +1,4 @@
-export {};
+export { };
 
 declare module "@mui/material/styles" {
     interface Theme {
@@ -7,8 +7,8 @@ declare module "@mui/material/styles" {
                 width: {
                     mobile: number;
                     desktop: number;
+                };
             };
-          };
         };
     }
 
@@ -21,5 +21,11 @@ declare module "@mui/material/styles" {
                 };
             };
         };
+    }
+}
+
+declare module "axios" {
+    export interface InternalAxiosRequestConfig {
+        retry?: boolean
     }
 }

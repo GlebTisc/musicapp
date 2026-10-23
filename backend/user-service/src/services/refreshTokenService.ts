@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import RefreshToken from '../models/RefreshToken';
 import User from '../models/User';
-import { AppError } from '../utils/AppError';
 import config from '../config';
+import { AuthenticationError } from '../utils/errors';
 
 const generateRefreshTokenValue = () => crypto.randomBytes(40).toString('hex');
 const generateFamily = () => crypto.randomBytes(20).toString('hex');
@@ -48,7 +48,7 @@ export const refreshAccessToken = async (oldRefreshToken: string) => {
 
     // check if token exists
     if (!storedToken) {
-        throw new AppError('Invalid refresh token', 401, 'Authentication Error');
+        throw new AuthenticationError("Invalid refresh token");
     }
 
     // check if token is revoked
@@ -58,28 +58,20 @@ export const refreshAccessToken = async (oldRefreshToken: string) => {
             { family: storedToken.family },
             { isRevoked: true, revokedAt: new Date() }
         );
-        throw new AppError(
-            'Refresh token reuse detected. All sessions revoked.',
-            401,
-            'Authentication Error'
-        );
+        throw new AuthenticationError("Refresh token reuse detected. All sessions revoked");
     }
 
     // check if session expired
     if (storedToken.sessionExpiresAt < new Date()) {
         await RefreshToken.deleteMany({ family: storedToken.family });
-        throw new AppError(
-            'Session expired. Please login again.',
-            401,
-            'Authentication Error'
-        );
+        throw new AuthenticationError("Session expired. Please login again");
     }
 
     // check if user exists
     const user = await User.findById(storedToken.userId);
     if (!user) {
         await RefreshToken.deleteMany({ family: storedToken.family });
-        throw new AppError('User not found', 401, 'Authentication Error');
+        throw new AuthenticationError("User not found");
     }
 
     // revoke the old token

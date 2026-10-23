@@ -29,6 +29,18 @@ class UserServiceProxyController extends Controller
     }
 
 
+    public function refresh(Request $request)
+    {
+        return $this->proxyResponse($client->refresh());
+    }
+
+
+    public function me(Request $request)
+    {
+        return $this->proxyResponse($client->me());
+    }
+
+
     private function proxyResponse(Response $response): JsonResponse
     {
         $jsonResponse = response()->json(

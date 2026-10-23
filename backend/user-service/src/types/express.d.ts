@@ -1,13 +1,11 @@
+import { UserResponse } from "../services/authService";
+
 export { };
 
 declare global {
     namespace Express {
         interface Request {
-            user?: {
-                id: string;
-                email: string;
-                role: 'user' | 'admin'
-            };
+            user?: UserResponse;
             validated?: unknown;
         }
     }

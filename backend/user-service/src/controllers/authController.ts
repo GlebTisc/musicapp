@@ -2,9 +2,9 @@ import type { Request, Response } from 'express';
 import * as authService from '../services/authService';
 import { catchAsync } from '../utils/catchAsync';
 import { getValidated } from '../middleware/validate';
-import { AppError } from '../utils/AppError';
 import type { RegisterDTO, LoginDTO } from '../services/authService';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
+import { AuthenticationError } from '../utils/errors';
 
 /**
  * Register user
@@ -40,7 +40,7 @@ export const validate = catchAsync(
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            throw new AppError('Access token not provided', 401, 'AuthenticationError');
+            throw new AuthenticationError("Access token is not provided");
         }
 
         const accessToken = authHeader.split(' ')[1];

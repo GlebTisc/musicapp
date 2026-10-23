@@ -20,7 +20,7 @@ class UserServiceClient
      */
     public function login(array $credentials)
     {
-        return $this->client()->post("{$this->baseUrl}/auth/login", $credentials);
+        return $this->client()->post("/auth/login", $credentials);
     }
 
 
@@ -29,7 +29,25 @@ class UserServiceClient
      */
     public function register(array $credentials)
     {
-        return $this->client()->post("{$this->baseUrl}/auth/register", $credentials);
+        return $this->client()->post("/auth/register", $credentials);
+    }
+
+
+    /**
+     * Refresh JWT token
+     */
+    public function refresh()
+    {
+        return $this->client()->post("/auth/refresh");
+    }
+
+
+    /**
+     * Get user info
+     */
+    public function me()
+    {
+        return $this->client()->get("/user/me");
     }
 
 

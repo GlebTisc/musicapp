@@ -43,7 +43,7 @@ export const errorHandler = (
         return;
     }
 
-    // unknown exception
+    // unknown error
     logger.error('Unhandled Error:', err);
 
     res.status(500).json({

@@ -1,15 +1,15 @@
 import type { Request, Response } from 'express';
 import * as refreshTokenService from '../services/refreshTokenService';
 import { catchAsync } from '../utils/catchAsync';
-import { AppError } from '../utils/AppError';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
+import { AuthenticationError } from '../utils/errors';
 
 export const refresh = catchAsync(async (req: Request, res: Response) => {
     const oldRefreshToken = req.cookies?.refreshToken;
 
     // check if refresh token is provided
     if (!oldRefreshToken) {
-        throw new AppError('Refresh token not provided', 401, 'AuthenticationError');
+        throw new AuthenticationError("Refresh token not provided");
     }
 
     // refresh tokens
