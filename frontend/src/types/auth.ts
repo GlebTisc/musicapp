@@ -6,7 +6,7 @@ export interface User {
 };
 
 export interface AuthState {
-    user: User | null;
+    user: User | null | undefined;
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
@@ -24,4 +24,15 @@ export interface AuthResponse {
     data: {
         user: User
     };
+}
+
+export interface ApiErrorDetail {
+    field: string;
+    message: string;
+}
+
+export interface ApiErrorPayload {
+    message: string;
+    error?: string;
+    details?: ApiErrorDetail[];
 }

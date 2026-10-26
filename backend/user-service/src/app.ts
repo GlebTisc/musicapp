@@ -28,7 +28,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-app.use('/api', routes);
+app.use(routes);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
     next(new NotFoundError(`Can't find ${req.originalUrl} on this server`));

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Proxy;
 
 use App\Http\Controllers\Controller;
 use App\Services\Clients\UserServiceClient;
-use Illuminate\Http\Client\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\Request;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
 
 class UserServiceProxyController extends Controller
@@ -16,7 +16,7 @@ class UserServiceProxyController extends Controller
     public function register(Request $request)
     {
         return $this->proxyResponse(
-            $client->register($request->only(['email', 'username', 'password']))
+            $this->client->register($request->only(['email', 'username', 'password']))
         );
     }
 
@@ -24,20 +24,20 @@ class UserServiceProxyController extends Controller
     public function login(Request $request)
     {
         return $this->proxyResponse(
-            $client->login($request->only(['username', 'password']))
+            $this->client->login($request->only(['username', 'password']))
         );
     }
 
 
     public function refresh(Request $request)
     {
-        return $this->proxyResponse($client->refresh());
+        return $this->proxyResponse($this->client->refresh());
     }
 
 
     public function me(Request $request)
     {
-        return $this->proxyResponse($client->me());
+        return $this->proxyResponse($this->client->me());
     }
 
 
@@ -49,8 +49,8 @@ class UserServiceProxyController extends Controller
         );
 
         // set all Set-Cookie headers
-        foreach ($response->headers()->getSetCookie() as $cookie) {
-            $jsonResponse->header('Set-Cookie', (string) $cookie, false);
+        foreach ($response->toPsrResponse()->getHeader('Set-Cookie') as $cookie) {
+            $jsonResponse->headers->set('Set-Cookie', (string) $cookie, false);
         }
 
         return $jsonResponse;

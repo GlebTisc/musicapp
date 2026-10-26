@@ -4,4 +4,4 @@ import { AppDispatch, RootState } from ".";
 export const createAppAsyncThunk = createAsyncThunk.withTypes<{
     state: RootState,
     dispatch: AppDispatch
-}>;
+}>();

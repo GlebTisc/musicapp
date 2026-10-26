@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
 import { AppError, ValidationError } from '../utils/AppError';
+import { ValidationFailedError } from '../utils/errors';
 
 export const getValidated = <T>(req: Request): T => {
     return req.validated as T;
@@ -19,7 +20,7 @@ export const validate = <T>(schema: z.ZodType<T>) => {
                     message: err.message
                 }))
 
-                next(new AppError("Validation failed", 400, "Validation error", details));
+                next(new ValidationFailedError(undefined, details));
             } else {
                 next(error)
             }

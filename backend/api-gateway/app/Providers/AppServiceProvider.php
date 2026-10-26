@@ -45,7 +45,7 @@ class AppServiceProvider extends ServiceProvider
 
         Http::globalRequestMiddleware(function ($request) {
             // add tracing
-            $requestId = Request::header("X-Request-ID");
+            $requestId = request()->header('X-Request-ID');
 
             // check if request id is provided
             if ($requestId) {
