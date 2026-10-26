@@ -4,10 +4,12 @@ WORKDIR /app
 
 COPY shared/ ./shared/
 
-COPY package*.json ./
+COPY backend/user-service/package*.json ./backend/user-service/
+
+WORKDIR /app/backend/user-service
 RUN npm install
 
-COPY . .
+COPY backend/user-service/ ./
 
 EXPOSE 3000
 

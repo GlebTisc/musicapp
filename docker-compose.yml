@@ -43,8 +43,8 @@ services:
   # ========== USER SERVICE (Express.js) ==========
   user-service:
     build:
-      context: ./backend/user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/user-service/Dockerfile
     container_name: music-user-service
     ports:
       - "8002:3000"
@@ -58,8 +58,9 @@ services:
       - JWT_REFRESH_EXPIRE=${JWT_REFRESH_EXPIRE}
       - JWT_ACCESS_EXPIRE=${JWT_ACCESS_EXPIRE}
     volumes:
-      - ./backend/user-service:/app
-      - /app/node_modules
+      - ./shared:/app/shared
+      - ./backend/user-service:/app/backend/user-service
+      - /app/backend/user-service/node_modules
     depends_on:
       - mongodb
     networks:
@@ -94,14 +95,15 @@ services:
   # ========== REACT FRONTEND ==========
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: music-frontend
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ./shared:/app/shared
+      - ./frontend:/app/frontend
+      - frontend_node_modules:/app/frontend/node_modules
     networks:
       - music-network
 
