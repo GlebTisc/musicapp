@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
-import { AppError, ValidationError } from '../utils/AppError';
+import { ValidationError } from '../utils/AppError';
 import { ValidationFailedError } from '../utils/errors';
 
 export const getValidated = <T>(req: Request): T => {
@@ -8,7 +8,7 @@ export const getValidated = <T>(req: Request): T => {
 }
 
 export const validate = <T>(schema: z.ZodType<T>) => {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
         try {
             req.validated = schema.parse(req.body);
             next();

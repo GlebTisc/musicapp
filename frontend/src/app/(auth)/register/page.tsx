@@ -16,7 +16,7 @@ import { isApiErrorPayload } from "@/lib/apiError";
 export default function RegisterPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const [formData, setFormData] = useState({ username: '', password: '', confirmPassword: '', email: '', rememberMe: false })
+    const [formData, setFormData] = useState({ username: '', password: '', confirmPassword: '', email: ''})
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [globalError, setGlobalError] = useState<string>('');
     const { user, isAuthenticated, isLoading } = useAuth();
@@ -34,7 +34,7 @@ export default function RegisterPage() {
 
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
 
         // clear field errors on input change
@@ -43,7 +43,7 @@ export default function RegisterPage() {
         }
     }
 
-    const handleSubmit = async (e: React.SubmitEvent) => {
+    const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
         setGlobalError('');
@@ -68,26 +68,18 @@ export default function RegisterPage() {
             } else {
                 setGlobalError('Unknown error occured. Please try again later...')
             }
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     return (
-        <Stack spacing={3} component="form">
+        <Stack spacing={3} component="form" onSubmit={handleSubmit}>
             <AuthFormHeader header="Register" />
             <InputText label="Username" name="username" value={formData.username} onChange={handleChange} startIcon={TextFormat} />
             <InputText label="Email" name="email" value={formData.email} onChange={handleChange} startIcon={Email} />
             <InputPassword label="Password" name="password" value={formData.password} onChange={handleChange} />
             <InputPassword label="Confirm password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} />
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={formData.rememberMe}
-                        name="rememberMe"
-                        onChange={handleChange}
-                    />
-                }
-                label="Remember me"
-            />
             <Button
                 type="submit"
                 variant="contained"

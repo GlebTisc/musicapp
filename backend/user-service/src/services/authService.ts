@@ -6,6 +6,7 @@ import { createTokenPair } from './refreshTokenService';
 import config from '../config';
 import type { ValidationError } from '../utils/AppError';
 import { isTokenPayload } from '../utils/typeguards';
+import {ValidationFailedError} from "../utils/errors";
 
 export const RegisterSchema = z.object({
     email: z.email('Invalid email format'),
@@ -58,12 +59,21 @@ const createTokens = (id: string) => createTokenPair(id);
  * @returns 
  */
 export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
-    const existingUser = await UserModel.findOne({ email: data.email });
+    let existingUser = await UserModel.findOne({ email: data.email });
+    let details:ValidationError[] = [];
+
     if (existingUser) {
-        const details: ValidationError[] = [
-            { field: 'email', message: 'Email already registered' },
-        ];
-        throw new AppError('Email already registered', 400, 'Validation Error', details);
+        details.push({ field: 'email', message: 'Email already registered' });
+    }
+
+    existingUser = await UserModel.findOne({ username: data.username });
+    if (existingUser) {
+        details.push({ field: 'username', message: 'Username already registered' });
+    }
+
+    // check if validation failed
+    if (details.length > 0) {
+        throw new ValidationFailedError(undefined, details);
     }
 
     const user = await UserModel.create(data);

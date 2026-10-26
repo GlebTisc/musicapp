@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/backend/user-service/src/server.js",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -28,6 +28,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.5",
+    "tsc-alias": "^1.9.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
