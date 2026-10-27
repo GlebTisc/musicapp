@@ -2,14 +2,10 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-COPY shared/ ./shared/
-
-COPY backend/user-service/package*.json ./backend/user-service/
-
-WORKDIR /app/backend/user-service
+COPY package*.json ./
 RUN npm install
 
-COPY backend/user-service/ ./
+COPY . .
 
 EXPOSE 3000
 

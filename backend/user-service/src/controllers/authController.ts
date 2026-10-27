@@ -2,9 +2,9 @@ import type { Request, Response } from 'express';
 import * as authService from '../services/authService';
 import { catchAsync } from '../utils/catchAsync';
 import { getValidated } from '../middleware/validate';
-import type { RegisterDTO, LoginDTO } from '../services/authService';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
 import { AuthenticationError } from '../utils/errors';
+import type { LoginDTO, RegisterDTO } from '../services/authService';
 
 /**
  * Register user

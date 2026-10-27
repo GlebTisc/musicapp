@@ -1,12 +1,23 @@
+import { useAuth } from "@/hooks/auth";
 import { AccountCircle } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
-import Link from "next/link";
+import { Icon, Typography } from "@mui/material";
+import ButtonOutline from "../ButtonOutline";
 
-export default function ProfileButton()
-{
-    return (
-        <IconButton LinkComponent={Link} href="/login">
-            <AccountCircle />
-        </IconButton>
-    );
+export default function ProfileButton() {
+    const { user, isAuthenticated } = useAuth();
+
+    return isAuthenticated
+        ? (
+            <Icon>
+                <AccountCircle />
+                <Typography component="h6">
+                    {user?.username}
+                </Typography>
+            </Icon >
+        )
+        : (
+            <ButtonOutline>
+                Login
+            </ButtonOutline>
+        );
 }

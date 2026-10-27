@@ -1,12 +1,11 @@
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
 import UserModel, { User } from '../models/User';
-import { AppError } from '../utils/AppError';
 import { createTokenPair } from './refreshTokenService';
+import { z } from 'zod';
 import config from '../config';
 import type { ValidationError } from '../utils/AppError';
 import { isTokenPayload } from '../utils/typeguards';
-import {ValidationFailedError} from "../utils/errors";
+import { AuthenticationError, TokenExpiredError, ValidationFailedError } from "../utils/errors";
 
 export const RegisterSchema = z.object({
     email: z.email('Invalid email format'),
@@ -14,11 +13,18 @@ export const RegisterSchema = z.object({
         .min(2, 'Name must be at least 2 characters')
         .max(50)
         .regex(
-            /^[a-zA-Z][a-zA-Z0-9]*([-_.][a-zA-Z0-9]+)?$/,
-            'Username must start with a letter, contain letters, numbers and optionally 1 special symbol'
+            /^[a-zA-Z][a-zA-Z0-9]+$/,
+            'Username must contain letters and numbers'
         )
     ,
-    password: z.string().min(8, 'Password must be at least 8 characters').max(128),
+    password: z.string()
+        .min(8, 'Password must be at least 8 characters')
+        .max(128)
+        .regex(
+            /^(?=.{10,128}$)[a-zA-Z][a-zA-Z0-9]*[!@#$%^&*()_+\-=,.?][a-zA-Z0-9]+$/,
+            'Password must be at least 10 characters long, contain 1 symbol, letters and numbers'
+        )
+    ,
 });
 
 export type RegisterDTO = z.infer<typeof RegisterSchema>;
@@ -60,7 +66,7 @@ const createTokens = (id: string) => createTokenPair(id);
  */
 export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
     let existingUser = await UserModel.findOne({ email: data.email });
-    let details:ValidationError[] = [];
+    let details: ValidationError[] = [];
 
     if (existingUser) {
         details.push({ field: 'email', message: 'Email already registered' });
@@ -92,7 +98,7 @@ export const login = async (data: LoginDTO): Promise<AuthResponse> => {
     const user = await UserModel.findOne({ username: data.username }).select('+password');
 
     if (!user || !(await user.comparePasswords(data.password))) {
-        throw new AppError('Incorrect email or password', 401, 'Authentication Error');
+        throw new AuthenticationError('Incorrect email or password');
     }
 
     const tokens = await createTokens(user._id.toString());
@@ -110,18 +116,18 @@ export const validateAccessToken = async (accessToken: string) => {
 
     // check if payload exists
     if (!decoded) {
-        throw new AppError('Invalid payload data', 401, 'InvalidTokenError');
+        throw new TokenExpiredError('Invalid payload data');
     }
 
     // check if token payload is valid
     if (!isTokenPayload(decoded)) {
-        throw new AppError('Invalid payload data', 401, 'InvalidTokenError');
+        throw new TokenExpiredError('Invalid payload data');
     }
 
     const user = await UserModel.findById(decoded.id);
 
     if (!user) {
-        throw new AppError('User not found', 401, 'Authentication Error');
+        throw new AuthenticationError('User not found');
     }
 
     return {

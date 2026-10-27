@@ -6,10 +6,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    && docker-php-ext-install zip
-
-# MongoDB driver
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Apache mod_rewrite
 RUN a2enmod rewrite
