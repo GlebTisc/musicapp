@@ -9,7 +9,7 @@ export const refresh = catchAsync(async (req: Request, res: Response) => {
 
     // check if refresh token is provided
     if (!oldRefreshToken) {
-        throw new AuthenticationError("Refresh token not is provided");
+        throw new AuthenticationError("Refresh token is not provided");
     }
 
     // refresh tokens

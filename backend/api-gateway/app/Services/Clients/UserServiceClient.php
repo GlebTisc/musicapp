@@ -2,6 +2,10 @@
 
 namespace App\Services\Clients;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class UserServiceClient
@@ -36,30 +40,56 @@ class UserServiceClient
     /**
      * Refresh JWT token
      */
-    public function refresh()
+    public function refresh(array $cookies = []): Response
     {
-        return $this->client()->post("/auth/refresh");
+        return $this->withCookies($this->client(), $cookies)
+            ->post('/auth/refresh');
     }
 
 
     /**
      * Get user info
      */
-    public function me()
+    public function me(array $cookies = []): Response
     {
-        return $this->client()->get("/user/me");
+        return $this->withCookies($this->client(), $cookies)
+            ->get('/user/me');
     }
 
 
     /**
      * Base method that contains necessary configuration
      */
-    private function client()
+    private function client(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)
             ->timeout(10)
             ->acceptJson()
             ->asJson()
         ;
+    }
+
+    /**
+     * Add cookies to the request
+     */
+    private function withCookies(PendingRequest $request, array $cookies): PendingRequest
+    {
+        if (empty($cookies)) {
+            return $request;
+        }
+
+        $host = parse_url($this->baseUrl, PHP_URL_HOST);
+
+        $jar = new CookieJar();
+        foreach ($cookies as $name => $value) {
+            $jar->setCookie(new SetCookie([
+                'Name'   => $name,
+                'Value'  => $value,
+                'Domain' => $host,
+                'Path'   => '/',
+            ]));
+        }
+
+        return $request->withOptions(['cookies' => $jar]);
     }
 }

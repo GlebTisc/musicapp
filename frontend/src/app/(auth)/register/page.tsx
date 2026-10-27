@@ -124,7 +124,7 @@ export default function RegisterPage() {
 
         // try to register
         try {
-            await dispatch(registerUser(formData)).unwrap();
+            await dispatch(registerUser(payload)).unwrap();
             router.push('/');
         } catch (error: unknown) {
             const newErrors: Record<string, string[]> = {};

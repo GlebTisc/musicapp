@@ -1,9 +1,14 @@
 import { mainTheme } from "@/themes/theme";
-import { alpha, Button } from "@mui/material";
+import { alpha, Button, type ButtonProps } from "@mui/material";
 
-export default function ButtonOutline({ children }: { children: React.ReactNode }) {
+interface ButtonOutlineProps extends ButtonProps {
+    children: React.ReactNode
+}
+
+export default function ButtonOutline({ children, ...props }: ButtonOutlineProps) {
     return (
         <Button
+            {...props}
             variant="outlined"
             sx={{
                 borderColor: mainTheme.palette.text.primary,

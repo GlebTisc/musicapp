@@ -31,13 +31,13 @@ class UserServiceProxyController extends Controller
 
     public function refresh(Request $request)
     {
-        return $this->proxyResponse($this->client->refresh());
+        return $this->proxyResponse($this->client->refresh($request->cookies->all()));
     }
 
 
     public function me(Request $request)
     {
-        return $this->proxyResponse($this->client->me());
+        return $this->proxyResponse($this->client->me($request->cookies->all()));
     }
 
 
