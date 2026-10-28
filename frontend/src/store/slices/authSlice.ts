@@ -1,5 +1,5 @@
 import { AuthState } from "@/types/auth";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, isRejectedWithValue, PayloadAction } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../typedThunk";
 import * as authApi from "@/lib/auth";
 import { LoginCredentials, RegisterCredentials, User } from "@/types/auth";
@@ -9,7 +9,7 @@ import { isAxiosError } from "axios";
 const initialState: AuthState = {
     user: undefined,
     isAuthenticated: false,
-    isLoading: false,
+    isLoading: true,
     error: null
 }
 
@@ -50,6 +50,19 @@ export const registerUser = createAppAsyncThunk(
             return user;
         } catch (error: unknown) {
             return rejectWithValue(toApiError(error));
+        }
+    }
+);
+
+export const logout = createAppAsyncThunk(
+    'auth/logout',
+    async (_, { rejectWithValue }) => {
+        try {
+            await authApi.logout();
+            return null;
+        } catch (error: unknown) {
+            // TODO: show an error to the user (general error handler has to be implemented)
+            return null;
         }
     }
 );
@@ -119,6 +132,19 @@ const authSlice = createSlice({
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = String(action.payload);
+            });
+
+        // logout
+        builder
+            .addCase(logout.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(logout.fulfilled, (state) => {
+                state.isLoading = false;
+                state.isAuthenticated = false;
+                state.user = null;
+                state.error = null;
             });
     }
 });

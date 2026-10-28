@@ -10,13 +10,11 @@ export function useAuth() {
     );
 
     useEffect(() => {
-        // check auth status only if:
-        // 1. Loading is already completed
-        // 2. User is empty
-        if (!isLoading && user === undefined) {
+        // check if user changed
+        if (user === undefined) {
             dispatch(checkAuth());
         }
-    }, [dispatch, isLoading, user]);
+    }, [dispatch, user]);
 
     return {
         user,

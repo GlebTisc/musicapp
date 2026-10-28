@@ -7,7 +7,7 @@ const protectedPaths = ['/profile'];
 // routes for unauthenticated users
 const authPaths = ['/login', '/register'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // check if route is protected
@@ -15,17 +15,15 @@ export function middleware(request: NextRequest) {
     const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
 
     // check accessToken cookie
-    const accessToken = request.cookies.get('accessToken');
+    const hasAccessToken = request.cookies.has('accessToken');
 
     // if token doesn't exist - redirect on the dashboard
-    if (isProtectedPath && !accessToken) {
-        const loginUrl = new URL('/', request.url);
-        loginUrl.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(loginUrl);
+    if (isProtectedPath && !hasAccessToken) {
+        return NextResponse.redirect(new URL('/', request.url));
     }
 
     // if user is authorized - redired on the dashboard
-    if (isAuthPath && accessToken) {
+    if (isAuthPath && hasAccessToken) {
         return NextResponse.redirect(new URL('/', request.url));
     }
 

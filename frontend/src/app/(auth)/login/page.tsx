@@ -13,7 +13,6 @@ import { useAppDispatch } from "@/store/hooks";
 import { useAuth } from "@/hooks/auth";
 import { loginUser } from "@/store/slices/authSlice";
 import { isApiErrorPayload } from "@/lib/apiError";
-import FormSkeleton from "@/components/skeletons/FormSkeleton";
 import FieldErrors from "@/components/FieldErrors";
 
 // key for form exceptions
@@ -119,60 +118,60 @@ export default function LoginPage() {
         }
     }
 
-    return isLoading
-        ? <FormSkeleton />
-        : (
-            <Stack spacing={3} component="form">
-                <AuthFormHeader header="Log in into account" />
-                <InputText
-                    label="Username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    startIcon={TextFormat}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.username?.length}
-                    helperText={<FieldErrors errors={fieldErrors.username} />}
-                />
-                <InputPassword
-                    label="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.password?.length}
-                    helperText={<FieldErrors errors={fieldErrors.password} />}
-                />
+    return (
+        <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+            <AuthFormHeader header="Log in into account" />
+            <InputText
+                label="Username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                startIcon={TextFormat}
+                disabled={isDisabled}
+                error={!!fieldErrors.username?.length}
+                helperText={<FieldErrors errors={fieldErrors.username} />}
+            />
+            <InputPassword
+                label="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isDisabled}
+                error={!!fieldErrors.password?.length}
+                helperText={<FieldErrors errors={fieldErrors.password} />}
+            />
 
-                {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
-                    <Stack spacing={1}>
-                        {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
-                            <Alert key={index} severity="error">
-                                {error}
-                            </Alert>
-                        ))}
-                    </Stack>
-                )}
+            {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
+                <Stack spacing={1}>
+                    {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
+                        <Alert key={index} severity="error">
+                            {error}
+                        </Alert>
+                    ))}
+                </Stack>
+            )}
 
-                <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    sx={{ py: 1.5, borderRadius: 2 }}
-                    disabled={isDisabled}
-                >
-                    Log in
-                </Button>
-                <Divider>
-                    <Typography variant="body2">
-                        OR
-                    </Typography>
-                </Divider>
-                <Typography component="span" variant="body2">
-                    Don't have an account?{" "}
-                    <RouterLink href="/register">
-                        Register
-                    </RouterLink>
+            <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                sx={{ py: 1.5, borderRadius: 2 }}
+                disabled={isDisabled}
+            >
+                Log in
+            </Button>
+            <Divider>
+                <Typography variant="body2">
+                    OR
                 </Typography>
-            </Stack>
-        );
+            </Divider>
+            <Typography component="span" variant="body2">
+                Don't have an account?{" "}
+                <RouterLink href="/register">
+                    Register
+                </RouterLink>
+            </Typography>
+        </Stack>
+    );
 }

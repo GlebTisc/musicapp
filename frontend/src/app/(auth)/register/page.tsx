@@ -9,7 +9,6 @@ import RouterLink from "@/components/RouterLink";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/auth";
 import { z } from "zod";
-import FormSkeleton from '@/components/skeletons/FormSkeleton';
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { registerUser } from "@/store/slices/authSlice";
@@ -149,81 +148,79 @@ export default function RegisterPage() {
         }
     }
 
-    return isLoading
-        ? <FormSkeleton />
-        : (
-            <Stack spacing={3} component="form" onSubmit={handleSubmit}>
-                <AuthFormHeader header="Register" />
-                <InputText
-                    label="Username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    startIcon={TextFormat}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.username?.length}
-                    helperText={<FieldErrors errors={fieldErrors.username} />}
-                />
-                <InputText
-                    label="Email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    startIcon={Email}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.email?.length}
-                    helperText={<FieldErrors errors={fieldErrors.email} />}
-                />
-                <InputPassword
-                    label="Password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.password?.length}
-                    helperText={<FieldErrors errors={fieldErrors.password} />}
-                />
-                <InputPassword
-                    label="Confirm password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    disabled={isDisabled}
-                    error={!!fieldErrors.confirmPassword?.length}
-                    helperText={<FieldErrors errors={fieldErrors.confirmPassword} />}
-                />
+    return (
+        <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+            <AuthFormHeader header="Register" />
+            <InputText
+                label="Username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                startIcon={TextFormat}
+                disabled={isDisabled}
+                error={!!fieldErrors.username?.length}
+                helperText={<FieldErrors errors={fieldErrors.username} />}
+            />
+            <InputText
+                label="Email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                startIcon={Email}
+                disabled={isDisabled}
+                error={!!fieldErrors.email?.length}
+                helperText={<FieldErrors errors={fieldErrors.email} />}
+            />
+            <InputPassword
+                label="Password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isDisabled}
+                error={!!fieldErrors.password?.length}
+                helperText={<FieldErrors errors={fieldErrors.password} />}
+            />
+            <InputPassword
+                label="Confirm password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                disabled={isDisabled}
+                error={!!fieldErrors.confirmPassword?.length}
+                helperText={<FieldErrors errors={fieldErrors.confirmPassword} />}
+            />
 
-                {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
-                    <Stack spacing={1}>
-                        {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
-                            <Alert key={index} severity="error">
-                                {error}
-                            </Alert>
-                        ))}
-                    </Stack>
-                )}
+            {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
+                <Stack spacing={1}>
+                    {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
+                        <Alert key={index} severity="error">
+                            {error}
+                        </Alert>
+                    ))}
+                </Stack>
+            )}
 
-                <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    sx={{ py: 1.5, borderRadius: 2 }}
-                    disabled={isDisabled}
-                >
-                    Register
-                </Button>
-                <Divider>
-                    <Typography variant="body2">
-                        OR
-                    </Typography>
-                </Divider>
-                <Typography component="span" variant="body2">
-                    Already have an account?{" "}
-                    <RouterLink href="/login">
-                        Log in
-                    </RouterLink>
+            <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                sx={{ py: 1.5, borderRadius: 2 }}
+                disabled={isDisabled}
+            >
+                Register
+            </Button>
+            <Divider>
+                <Typography variant="body2">
+                    OR
                 </Typography>
-            </Stack>
-        );
+            </Divider>
+            <Typography component="span" variant="body2">
+                Already have an account?{" "}
+                <RouterLink href="/login">
+                    Log in
+                </RouterLink>
+            </Typography>
+        </Stack>
+    );
 }

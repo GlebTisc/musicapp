@@ -58,6 +58,16 @@ class UserServiceClient
 
 
     /**
+     * Logout user
+     */
+    public function logout(array $cookies = []): Response
+    {
+        return $this->withCookies($this->client(), $cookies)
+            ->post('/user/logout');
+    }
+
+
+    /**
      * Base method that contains necessary configuration
      */
     private function client(): PendingRequest

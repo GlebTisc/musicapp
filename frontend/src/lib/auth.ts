@@ -15,3 +15,7 @@ export const checkAuthStatus = async (): Promise<User> => {
     const response = await api.get<AuthResponse>('api/user/me');
     return response.data.data.user;
 }
+
+export const logout = async (): Promise<void> => {
+    await api.post<AuthResponse>('api/user/logout', {});
+}

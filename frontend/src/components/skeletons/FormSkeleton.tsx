@@ -1,11 +1,13 @@
-import { Stack, Skeleton } from "@mui/material";
+import { mainTheme } from "@/themes/theme";
+import { Stack } from "@mui/material";
+import FieldSkeleton from "./FieldSkeleton";
 
 export default function FormSkeleton() {
     return (<Stack spacing={3} component="div">
-        <Skeleton variant="text" height="32px" />
-        <Skeleton variant="text" height="32px" />
-        <Skeleton variant="text" height="32px" />
-        <Skeleton variant="text" height="32px" />
-        <Skeleton variant="rectangular" height="64px" />
+        <FieldSkeleton variant="text" />
+        <FieldSkeleton variant="text" />
+        <FieldSkeleton variant="text" />
+        <FieldSkeleton variant="text" />
+        <FieldSkeleton variant="rectangular" height="64px" />
     </Stack>);
 }

@@ -41,6 +41,12 @@ class UserServiceProxyController extends Controller
     }
 
 
+    public function logout(Request $request)
+    {
+        return $this->proxyResponse($this->client->logout($request->cookies->all()));
+    }
+
+
     private function proxyResponse(Response $response): JsonResponse
     {
         $jsonResponse = response()->json(

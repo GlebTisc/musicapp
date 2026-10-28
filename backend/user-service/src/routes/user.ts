@@ -6,5 +6,6 @@ import * as userController from '../controllers/userController';
 const router = Router();
 
 router.get('/me', tryRefresh, authenticate, userController.me)
+router.post('/logout', userController.logout)
 
 export default router;
