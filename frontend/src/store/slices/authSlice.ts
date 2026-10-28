@@ -61,8 +61,7 @@ export const logout = createAppAsyncThunk(
             await authApi.logout();
             return null;
         } catch (error: unknown) {
-            // TODO: show an error to the user (general error handler has to be implemented)
-            return null;
+            return rejectWithValue(toApiError(error));
         }
     }
 );
@@ -115,7 +114,10 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = String(action.payload);
+                state.error = isApiErrorPayload(action.payload)
+                    ? action.payload.message
+                    : action.error.message || "Unknown error"
+                ;
             });
 
         // register
@@ -131,7 +133,10 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = String(action.payload);
+                state.error = isApiErrorPayload(action.payload)
+                    ? action.payload.message
+                    : action.error.message || "Unknown error"
+                ;
             });
 
         // logout
@@ -145,6 +150,15 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 state.user = null;
                 state.error = null;
+            })
+            .addCase(logout.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isAuthenticated = false;
+                state.user = null;
+                state.error = isApiErrorPayload(action.payload)
+                    ? action.payload.message
+                    : "Logout failed, but you have been logged out locally"
+                ;
             });
     }
 });

@@ -16,6 +16,9 @@ api.interceptors.request.use((config) => {
     return config;
 })
 
+// refresh block: only 1 request should be handled at a time
+let refreshPromise: Promise<unknown> | null = null;
+
 api.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
@@ -28,9 +31,16 @@ api.interceptors.response.use(
 
             error.config.retry = true;
 
+            // check if refresh is already pending
+            if (!refreshPromise) {
+                refreshPromise = api.post('api/auth/refresh', {}).finally(() => {
+                    refreshPromise = null;
+                });
+            }
+
             // try to refresh token
             try {
-                await api.post('api/auth/refresh', {});
+                await refreshPromise;
 
                 // retry the initial request
                 return api(error.config)

@@ -1,9 +1,10 @@
+import crypto from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import RefreshToken from '../models/RefreshToken';
 import User from '../models/User';
 import config from '../config';
-import { setAccessTokenCookie } from '../utils/cookies';
+import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
 
 /**
  * An attempt to refresh JWT access token
@@ -33,25 +34,56 @@ export const tryRefresh = async (
     if (!refreshToken) return next();
 
     try {
-        const storedRefresh = await RefreshToken.findOne({
-            token: refreshToken,
-            isRevoked: false,
-        });
+        const storedRefresh = await RefreshToken.findOne({token: refreshToken});
 
         if (!storedRefresh) return next();
 
+        // token is compromised
+        if (storedRefresh.isRevoked) {
+            // revoke the token's family
+            await RefreshToken.updateMany(
+                { family: storedRefresh.family },
+                { $set: {isRevoked: true} }
+            );
+
+            // clear cookies
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken');
+            return next();
+        }
+
         // check if session is expired
         if (storedRefresh.sessionExpiresAt < new Date()) {
-            await RefreshToken.deleteMany({ family: storedRefresh.family });
+            await await RefreshToken.updateMany(
+                { family: storedRefresh.family },
+                { $set: {isRevoked: true} }
+            );
             return next();
         }
 
         const user = await User.findById(storedRefresh.userId);
         if (!user) return next();
 
+        // rotate the token
+        storedRefresh.isRevoked = true;
+        await storedRefresh.save();
+
+        const newRefreshToken = crypto.randomBytes(40).toString('hex');
+
+        // save new refresh token with the old family
+        await RefreshToken.create({
+            token: newRefreshToken,
+            userId: user._id,
+            family: storedRefresh.family,
+            sessionExpiresAt: storedRefresh.sessionExpiresAt,
+            isRevoked: false,
+        });
+
+        setRefreshTokenCookie(res, newRefreshToken);
+
         // generate new access token
         const newAccessToken = jwt.sign(
-            { id: user._id.toString() },
+            { id: user._id.toString(), role: user.role },
             config.jwt.secret,
             { expiresIn: config.jwt.accessExpiresIn }
         );
