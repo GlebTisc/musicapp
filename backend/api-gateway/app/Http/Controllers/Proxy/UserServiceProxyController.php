@@ -47,6 +47,12 @@ class UserServiceProxyController extends Controller
     }
 
 
+    public function getAll(Request $request)
+    {
+        return $this->proxyResponse($this->client->getAll($request->query()));
+    }
+
+
     private function proxyResponse(Response $response): JsonResponse
     {
         $jsonResponse = response()->json(

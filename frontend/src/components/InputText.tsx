@@ -1,26 +1,45 @@
 import { SvgIconComponent } from "@mui/icons-material";
-import { TextField, TextFieldProps, InputAdornment } from "@mui/material"
+import { TextField, TextFieldProps, InputAdornment, IconButton } from "@mui/material"
 
 type InputTextProps = TextFieldProps & {
     startIcon?: SvgIconComponent,
-    endIcon?: SvgIconComponent
+    endIcon?: SvgIconComponent,
+    onStartClick?: () => void,
+    onEndClick?: () => void
 };
 
-export default function InputText({startIcon: StartIcon, endIcon: EndIcon, ...props}: InputTextProps)
-{
+export default function InputText({
+    startIcon: StartIcon,
+    endIcon: EndIcon,
+    onStartClick,
+    onEndClick,
+    ...props
+}: InputTextProps) {
     return (
-        <TextField 
+        <TextField
             {...props}
             slotProps={{
                 input: {
-                    startAdornment: (
+                    startAdornment: StartIcon && (
                         <InputAdornment position="start">
-                            {StartIcon && <StartIcon />}
+                            {onStartClick
+                                ? (<IconButton onClick={onStartClick} type="button">
+                                    <StartIcon />
+                                </IconButton>
+                                )
+                                : <StartIcon />
+                            }
                         </InputAdornment>
                     ),
-                    endAdornment: (
+                    endAdornment: EndIcon && (
                         <InputAdornment position="end">
-                            {EndIcon && <EndIcon />}
+                            {onEndClick
+                                ? (<IconButton onClick={onEndClick} type="button">
+                                    <EndIcon />
+                                </IconButton>
+                                )
+                                : <EndIcon />
+                            }
                         </InputAdornment>
                     )
                 }

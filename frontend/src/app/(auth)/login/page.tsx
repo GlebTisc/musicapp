@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/auth";
 import { loginUser } from "@/store/slices/authSlice";
 import { isApiErrorPayload } from "@/lib/apiError";
 import FieldErrors from "@/components/FieldErrors";
+import FormSkeleton from "@/components/skeletons/FormSkeleton";
 
 // key for form exceptions
 const FORM_ERROR_KEY = "_form";
@@ -33,14 +34,7 @@ export default function LoginPage() {
     const { user, isAuthenticated, isLoading } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const isDisabled = isSubmitting || isLoading;
-
-    // redirect if user is authenticated
-    useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            router.push("/");
-        }
-    }, [isAuthenticated, isLoading, router]);
+    const isDisabled = isSubmitting || (isLoading && user === undefined);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -98,18 +92,25 @@ export default function LoginPage() {
         } catch (error: unknown) {
             const newErrors: Record<string, string[]> = {};
 
+            const addError = (key: string, message: string) => {
+                if (!newErrors[key]) {
+                    newErrors[key] = [];
+                }
+                newErrors[key].push(message);
+            };
+
             // check if it's known error
             if (isApiErrorPayload(error)) {
                 if (error.details && error.details.length > 0) {
                     error.details.forEach((detail) => {
                         const key = detail.field || FORM_ERROR_KEY;
-                        newErrors[key].push(detail.message);
+                        addError(key, detail.message);
                     });
                 } else {
-                    newErrors[FORM_ERROR_KEY].push(error.message);
+                    addError(FORM_ERROR_KEY, error.message);
                 }
             } else {
-                newErrors[FORM_ERROR_KEY].push('Unknown error occured. Please try again later...');
+                addError(FORM_ERROR_KEY, 'Unknown error occured. Please try again later...');
             }
 
             setFieldErrors(newErrors);
@@ -118,60 +119,62 @@ export default function LoginPage() {
         }
     }
 
-    return (
-        <Stack spacing={3} component="form" onSubmit={handleSubmit}>
-            <AuthFormHeader header="Log in into account" />
-            <InputText
-                label="Username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                startIcon={TextFormat}
-                disabled={isDisabled}
-                error={!!fieldErrors.username?.length}
-                helperText={<FieldErrors errors={fieldErrors.username} />}
-            />
-            <InputPassword
-                label="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isDisabled}
-                error={!!fieldErrors.password?.length}
-                helperText={<FieldErrors errors={fieldErrors.password} />}
-            />
+    return (isLoading && user === undefined)
+        ? <FormSkeleton />
+        : (
+            <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+                <AuthFormHeader header="Log in into account" />
+                <InputText
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    startIcon={TextFormat}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.username?.length}
+                    helperText={<FieldErrors errors={fieldErrors.username} />}
+                />
+                <InputPassword
+                    label="Password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.password?.length}
+                    helperText={<FieldErrors errors={fieldErrors.password} />}
+                />
 
-            {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
-                <Stack spacing={1}>
-                    {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
-                        <Alert key={index} severity="error">
-                            {error}
-                        </Alert>
-                    ))}
-                </Stack>
-            )}
+                {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
+                    <Stack spacing={1}>
+                        {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
+                            <Alert key={index} severity="error">
+                                {error}
+                            </Alert>
+                        ))}
+                    </Stack>
+                )}
 
-            <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                sx={{ py: 1.5, borderRadius: 2 }}
-                disabled={isDisabled}
-            >
-                Log in
-            </Button>
-            <Divider>
-                <Typography variant="body2">
-                    OR
+                <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    sx={{ py: 1.5, borderRadius: 2 }}
+                    disabled={isDisabled}
+                >
+                    Log in
+                </Button>
+                <Divider>
+                    <Typography variant="body2">
+                        OR
+                    </Typography>
+                </Divider>
+                <Typography component="span" variant="body2">
+                    Don't have an account?{" "}
+                    <RouterLink href="/register">
+                        Register
+                    </RouterLink>
                 </Typography>
-            </Divider>
-            <Typography component="span" variant="body2">
-                Don't have an account?{" "}
-                <RouterLink href="/register">
-                    Register
-                </RouterLink>
-            </Typography>
-        </Stack>
-    );
+            </Stack>
+        );
 }

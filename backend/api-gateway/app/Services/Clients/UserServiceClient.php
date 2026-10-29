@@ -67,6 +67,12 @@ class UserServiceClient
     }
 
 
+    public function getAll(string $queryParams): Response
+    {
+        return $this->client()->get('/user/getAll', $queryParams);
+    }
+
+
     /**
      * Base method that contains necessary configuration
      */

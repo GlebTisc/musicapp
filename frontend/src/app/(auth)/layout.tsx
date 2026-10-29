@@ -1,6 +1,21 @@
-import { Box, Container, Paper, Stack } from "@mui/material";
+"use client"
+
+import { useAuth } from "@/hooks/auth";
+import { Box, Paper } from "@mui/material";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginLayout({ children }: LayoutProps<"/">) {
+    const router = useRouter();
+    const { isAuthenticated, isLoading } = useAuth();
+
+    // redirect if user is authenticated
+    useEffect(() => {
+        if (!isLoading && isAuthenticated) {
+            router.push("/");
+        }
+    }, [isAuthenticated, isLoading, router]);
+
     return (
         <Box
             sx={{

@@ -14,9 +14,9 @@ const generateFamily = () => crypto.randomBytes(20).toString('hex');
  * @param userId
  * @returns 
  */
-export const createTokenPair = async (userId: string) => {
+export const createTokenPair = async (userId: string, role: 'admin' | 'user') => {
     const accessToken = jwt.sign(
-        { id: userId },
+        { id: userId, role: role },
         config.jwt.secret,
         { expiresIn: config.jwt.accessExpiresIn }
     );
@@ -81,7 +81,7 @@ export const refreshAccessToken = async (oldRefreshToken: string) => {
 
     // create new JWT token
     const accessToken = jwt.sign(
-        { id: user._id.toString() },
+        { id: user._id.toString(), role: user.role },
         config.jwt.secret,
         { expiresIn: config.jwt.accessExpiresIn }
     );

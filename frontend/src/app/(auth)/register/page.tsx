@@ -14,6 +14,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { registerUser } from "@/store/slices/authSlice";
 import { isApiErrorPayload } from "@/lib/apiError";
 import FieldErrors from "@/components/FieldErrors";
+import FormSkeleton from "@/components/skeletons/FormSkeleton";
 
 // key for form exceptions
 const FORM_ERROR_KEY = "_form";
@@ -57,14 +58,7 @@ export default function RegisterPage() {
     const { user, isAuthenticated, isLoading } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const isDisabled = isSubmitting || isLoading;
-
-    // redirect if user is authenticated
-    useEffect(() => {
-        if (!isLoading && isAuthenticated) {
-            router.push("/");
-        }
-    }, [isAuthenticated, isLoading, router]);
+    const isDisabled = isSubmitting || (isLoading && user === undefined);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -124,22 +118,29 @@ export default function RegisterPage() {
         // try to register
         try {
             await dispatch(registerUser(payload)).unwrap();
-            router.push('/');
+            router.replace('/');
         } catch (error: unknown) {
             const newErrors: Record<string, string[]> = {};
+
+            const addError = (key: string, message: string) => {
+                if (!newErrors[key]) {
+                    newErrors[key] = [];
+                }
+                newErrors[key].push(message);
+            };
 
             // check if it's known error
             if (isApiErrorPayload(error)) {
                 if (error.details && error.details.length > 0) {
                     error.details.forEach((detail) => {
                         const key = detail.field || FORM_ERROR_KEY;
-                        newErrors[key].push(detail.message);
+                        addError(key, detail.message);
                     });
                 } else {
-                    newErrors[FORM_ERROR_KEY].push(error.message);
+                    addError(FORM_ERROR_KEY, error.message || 'An error occurred');
                 }
             } else {
-                newErrors[FORM_ERROR_KEY].push('Unknown error occured. Please try again later...');
+                addError(FORM_ERROR_KEY, 'Unknown error occured. Please try again later...');
             }
 
             setFieldErrors(newErrors);
@@ -148,79 +149,81 @@ export default function RegisterPage() {
         }
     }
 
-    return (
-        <Stack spacing={3} component="form" onSubmit={handleSubmit}>
-            <AuthFormHeader header="Register" />
-            <InputText
-                label="Username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                startIcon={TextFormat}
-                disabled={isDisabled}
-                error={!!fieldErrors.username?.length}
-                helperText={<FieldErrors errors={fieldErrors.username} />}
-            />
-            <InputText
-                label="Email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                startIcon={Email}
-                disabled={isDisabled}
-                error={!!fieldErrors.email?.length}
-                helperText={<FieldErrors errors={fieldErrors.email} />}
-            />
-            <InputPassword
-                label="Password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isDisabled}
-                error={!!fieldErrors.password?.length}
-                helperText={<FieldErrors errors={fieldErrors.password} />}
-            />
-            <InputPassword
-                label="Confirm password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                disabled={isDisabled}
-                error={!!fieldErrors.confirmPassword?.length}
-                helperText={<FieldErrors errors={fieldErrors.confirmPassword} />}
-            />
+    return (isLoading && user === undefined)
+        ? <FormSkeleton />
+        : (
+            <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+                <AuthFormHeader header="Register" />
+                <InputText
+                    label="Username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    startIcon={TextFormat}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.username?.length}
+                    helperText={<FieldErrors errors={fieldErrors.username} />}
+                />
+                <InputText
+                    label="Email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    startIcon={Email}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.email?.length}
+                    helperText={<FieldErrors errors={fieldErrors.email} />}
+                />
+                <InputPassword
+                    label="Password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.password?.length}
+                    helperText={<FieldErrors errors={fieldErrors.password} />}
+                />
+                <InputPassword
+                    label="Confirm password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    error={!!fieldErrors.confirmPassword?.length}
+                    helperText={<FieldErrors errors={fieldErrors.confirmPassword} />}
+                />
 
-            {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
-                <Stack spacing={1}>
-                    {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
-                        <Alert key={index} severity="error">
-                            {error}
-                        </Alert>
-                    ))}
-                </Stack>
-            )}
+                {fieldErrors[FORM_ERROR_KEY]?.length > 0 && (
+                    <Stack spacing={1}>
+                        {fieldErrors[FORM_ERROR_KEY].map((error, index) => (
+                            <Alert key={index} severity="error">
+                                {error}
+                            </Alert>
+                        ))}
+                    </Stack>
+                )}
 
-            <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                sx={{ py: 1.5, borderRadius: 2 }}
-                disabled={isDisabled}
-            >
-                Register
-            </Button>
-            <Divider>
-                <Typography variant="body2">
-                    OR
+                <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    sx={{ py: 1.5, borderRadius: 2 }}
+                    disabled={isDisabled}
+                >
+                    Register
+                </Button>
+                <Divider>
+                    <Typography variant="body2">
+                        OR
+                    </Typography>
+                </Divider>
+                <Typography component="span" variant="body2">
+                    Already have an account?{" "}
+                    <RouterLink href="/login">
+                        Log in
+                    </RouterLink>
                 </Typography>
-            </Divider>
-            <Typography component="span" variant="body2">
-                Already have an account?{" "}
-                <RouterLink href="/login">
-                    Log in
-                </RouterLink>
-            </Typography>
-        </Stack>
-    );
+            </Stack>
+        );
 }

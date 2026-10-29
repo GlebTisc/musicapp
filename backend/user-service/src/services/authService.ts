@@ -56,7 +56,7 @@ export const extractUserFields = (user: User) => ({
     role: user.role,
 });
 
-const createTokens = (id: string) => createTokenPair(id);
+const createTokens = (id: string, role: 'admin' | 'user') => createTokenPair(id, role);
 
 /**
  * Register function
@@ -83,7 +83,7 @@ export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
     }
 
     const user = await UserModel.create(data);
-    const tokens = await createTokens(user._id.toString());
+    const tokens = await createTokens(user._id.toString(), user.role);
 
     return { ...tokens, user: extractUserFields(user) };
 };
@@ -98,10 +98,10 @@ export const login = async (data: LoginDTO): Promise<AuthResponse> => {
     const user = await UserModel.findOne({ username: data.username }).select('+password');
 
     if (!user || !(await user.comparePasswords(data.password))) {
-        throw new AuthenticationError('Incorrect email or password');
+        throw new ValidationFailedError('Incorrect email or password');
     }
 
-    const tokens = await createTokens(user._id.toString());
+    const tokens = await createTokens(user._id.toString(), user.role);
     return { ...tokens, user: extractUserFields(user) };
 };
 

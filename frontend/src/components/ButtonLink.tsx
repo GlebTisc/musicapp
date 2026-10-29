@@ -1,3 +1,5 @@
+"use client"
+
 import { mainTheme } from "@/themes/theme";
 import { Button, type ButtonProps } from "@mui/material";
 import Link from "next/link";
