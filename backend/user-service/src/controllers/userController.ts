@@ -2,6 +2,9 @@ import RefreshToken from "src/models/RefreshToken";
 import { catchAsync } from "../utils/catchAsync";
 import type { Request, Response } from 'express';
 import { cookieOptions } from "src/utils/cookies";
+import { getValidatedQuery } from "src/middleware/validate";
+import { GetUserDTO } from "src/services/userService";
+import * as userService from "../services/userService";
 
 /**
  * Get user info
@@ -41,3 +44,13 @@ export const logout = catchAsync(
         });
     }
 );
+
+/**
+ * Get users and return them to the admin
+ */
+export const getList = catchAsync(
+    async (req: Request, res: Response) => {
+        const validatedQueryParams = getValidatedQuery<GetUserDTO>(req);
+        res.status(200).json({ status: 'success', data: userService.getListOfUsers(validatedQueryParams) })
+    }
+)

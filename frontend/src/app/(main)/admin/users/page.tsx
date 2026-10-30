@@ -10,7 +10,7 @@ type UserResponse = {
     message?: string,
     data?: {
         users: object[],
-        count: number
+        total: number
     }
 };
 

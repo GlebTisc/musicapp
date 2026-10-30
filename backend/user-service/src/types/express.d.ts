@@ -7,6 +7,7 @@ declare global {
         interface Request {
             user?: UserResponse;
             validated?: unknown;
+            validatedQuery?: unknown;
         }
     }
 }

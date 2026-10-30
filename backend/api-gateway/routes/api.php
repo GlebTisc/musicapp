@@ -12,5 +12,5 @@ Route::prefix('/auth')->group(function () {
 Route::prefix('/user')->group(function () {
     Route::get('/me', [UserServiceProxyController::class, 'me']);
     Route::post('/logout', [UserServiceProxyController::class, 'logout']);
-    Route::get('/', [UserServiceProxyController::class, 'getAll']);
+    Route::get('/getList', [UserServiceProxyController::class, 'getList']);
 });

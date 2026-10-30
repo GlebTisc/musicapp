@@ -47,9 +47,9 @@ class UserServiceProxyController extends Controller
     }
 
 
-    public function getAll(Request $request)
+    public function getList(Request $request)
     {
-        return $this->proxyResponse($this->client->getAll($request->query()));
+        return $this->proxyResponse($this->client->getList($request->query()));
     }
 
 

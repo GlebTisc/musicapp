@@ -67,9 +67,9 @@ class UserServiceClient
     }
 
 
-    public function getAll(string $queryParams): Response
+    public function getList(string $queryParams): Response
     {
-        return $this->client()->get('/user/getAll', $queryParams);
+        return $this->client()->get('/user/getList', $queryParams);
     }
 
 
