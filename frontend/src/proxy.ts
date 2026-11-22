@@ -1,59 +1,66 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify, importSPKI, JWTPayload } from 'jose';
 
 const protectedPaths = ['/profile'];
 const adminPaths = ['/admin'];
 const authPaths = ['/login', '/register'];
 
-type JwtPayload = { role?: string };
+const matches = (pathname: string, paths: string[]) =>
+    paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+let publicKey: CryptoKey | undefined;
 
 /**
- * Parse JWT payload WITHOUT VERIFYING!!!; backend checks token
+ * Get base64 encoded key 
+ * 
+ * @returns 
+ */
+async function getPublicKey(): Promise<CryptoKey> {
+    if (!publicKey) {
+        const pem = atob(process.env.JWT_PUBLIC_KEY!);
+        publicKey = await importSPKI(pem, 'RS256');
+    }
+    return publicKey;
+}
+
+/**
+ * Verify token
  * 
  * @param token 
  * @returns 
  */
-function getRole(token: string): string | undefined {
+async function verifyToken(token: string): Promise<JWTPayload | null> {
     try {
-        const parts = token.split('.');
-        if (parts.length !== 3) return undefined;
-
-        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-        const binary = atob(base64);
-        const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-        const payload = JSON.parse(new TextDecoder().decode(bytes)) as JwtPayload;
-
-        return payload.role;
-    } catch {
-        return undefined;
+        const key = await getPublicKey();
+        const { payload } = await jwtVerify(token, key, { algorithms: ['RS256'] });
+        return payload;
+    } catch (error) {
+        console.warn('verifyToken failed:', error);
+        return null;
     }
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
-    const isAdmin = adminPaths.some((p) => pathname.startsWith(p));
-    const isAuth = authPaths.some((p) => pathname.startsWith(p));
+    const isProtected = matches(pathname, protectedPaths);
+    const isAdmin = matches(pathname, adminPaths);
+    const isAuth = matches(pathname, authPaths);
+    const needsAuth = isProtected || isAdmin;
 
-    // check accessToken cookie
     const token = request.cookies.get('accessToken')?.value;
+    const payload = token ? await verifyToken(token) : null;
 
-    // if token doesn't exist and route is protected / admin - redirect on the homepage
-    if ((isProtected || isAdmin) && !token) {
+    if (needsAuth && !payload) {
+        return NextResponse.redirect(new URL('/login', request.url));
+    }
+    if (isAdmin && payload?.role !== 'admin') {
         return NextResponse.redirect(new URL('/', request.url));
     }
-
-    // if user is authenticated and route requires guest - redirect
-    if (isAuth && token) {
+    if (isAuth && payload) {
         return NextResponse.redirect(new URL('/', request.url));
     }
-
-    // if user is authorized - redired on the dashboard
-    if (isAdmin && token && getRole(token) !== 'admin') {
-        return NextResponse.redirect(new URL('/', request.url));
-    }
-
     return NextResponse.next();
 }
 
@@ -66,6 +73,6 @@ export const config = {
          * - favicon.ico (favicon file)
          * - public folder
          */
-        '/((?!_next/static|_next/image|favicon.ico|public).*)',
+        '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)',
     ],
 };

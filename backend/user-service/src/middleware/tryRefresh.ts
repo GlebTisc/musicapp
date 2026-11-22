@@ -1,10 +1,11 @@
 import crypto from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import RefreshToken from '../models/RefreshToken';
 import User from '../models/User';
 import config from '../config';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
+import { getPrivateKey, getPublicKey } from 'src/utils/keys';
+import { jwtVerify, SignJWT } from 'jose';
 
 /**
  * An attempt to refresh JWT access token
@@ -23,10 +24,11 @@ export const tryRefresh = async (
     if (!accessToken) return next();
 
     try {
-        jwt.verify(accessToken, config.jwt.secret);
+        const key = await getPublicKey();
+        await jwtVerify(accessToken, key, { algorithms: ['RS256'] });
         return next();
     } catch (error: any) {
-        if (error.name !== 'TokenExpiredError') return next();
+        if (error.code !== 'ERR_JWT_EXPIRED') return next();
     }
 
     // access token is expired, check refresh token
@@ -81,12 +83,14 @@ export const tryRefresh = async (
 
         setRefreshTokenCookie(res, newRefreshToken);
 
+        const key = await getPrivateKey();
         // generate new access token
-        const newAccessToken = jwt.sign(
-            { id: user._id.toString(), role: user.role },
-            config.jwt.secret,
-            { expiresIn: config.jwt.accessExpiresIn }
-        );
+        const newAccessToken = await new SignJWT({ id: user._id.toString(), role: user.role })
+            .setProtectedHeader({ alg: 'RS256' })
+            .setIssuedAt()
+            .setExpirationTime(config.jwt.accessExpiresIn)
+            .sign(key)
+        ;
 
         // update cookie for the access token
         setAccessTokenCookie(res, newAccessToken);

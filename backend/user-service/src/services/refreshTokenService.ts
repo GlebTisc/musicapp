@@ -1,9 +1,10 @@
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
 import RefreshToken from '../models/RefreshToken';
 import User from '../models/User';
 import config from '../config';
 import { AuthenticationError } from '../utils/errors';
+import { SignJWT } from 'jose';
+import { getPrivateKey } from 'src/utils/keys';
 
 const generateRefreshTokenValue = () => crypto.randomBytes(40).toString('hex');
 const generateFamily = () => crypto.randomBytes(20).toString('hex');
@@ -15,11 +16,14 @@ const generateFamily = () => crypto.randomBytes(20).toString('hex');
  * @returns 
  */
 export const createTokenPair = async (userId: string, role: 'admin' | 'user') => {
-    const accessToken = jwt.sign(
-        { id: userId, role: role },
-        config.jwt.secret,
-        { expiresIn: config.jwt.accessExpiresIn }
-    );
+    const key = await getPrivateKey();
+    
+    const accessToken = await new SignJWT({ id: userId, role: role })
+        .setProtectedHeader({ alg: 'RS256' })
+        .setIssuedAt()
+        .setExpirationTime(config.jwt.accessExpiresIn)
+        .sign(key)
+    ;
 
     const refreshTokenValue = generateRefreshTokenValue();
     const family = generateFamily();
@@ -79,12 +83,14 @@ export const refreshAccessToken = async (oldRefreshToken: string) => {
     storedToken.revokedAt = new Date();
     await storedToken.save();
 
+    const key = await getPrivateKey();
     // create new JWT token
-    const accessToken = jwt.sign(
-        { id: user._id.toString(), role: user.role },
-        config.jwt.secret,
-        { expiresIn: config.jwt.accessExpiresIn }
-    );
+    const accessToken = await new SignJWT({ id: user._id.toString(), role: user.role })
+        .setProtectedHeader({ alg: 'RS256' })
+        .setIssuedAt()
+        .setExpirationTime(config.jwt.accessExpiresIn)
+        .sign(key)
+    ;
 
     // create new refresh token
     const newRefreshToken = generateRefreshTokenValue();

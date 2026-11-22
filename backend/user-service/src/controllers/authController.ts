@@ -3,7 +3,6 @@ import * as authService from '../services/authService';
 import { catchAsync } from '../utils/catchAsync';
 import { getValidated } from '../middleware/validate';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
-import { AuthenticationError } from '../utils/errors';
 import type { LoginDTO, RegisterDTO } from '../services/authService';
 
 /**
@@ -32,20 +31,8 @@ export const login = catchAsync(
     }
 );
 
-/**
- * Validate access token
- */
 export const validate = catchAsync(
     async (req: Request, res: Response) => {
-        const authHeader = req.headers.authorization;
-
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            throw new AuthenticationError("Access token is not provided");
-        }
-
-        const accessToken = authHeader.split(' ')[1];
-        const user = await authService.validateAccessToken(accessToken);
-
-        res.status(200).json({ status: 'success', data: user });
+        res.status(200).json({status: 'success', data: req.user});
     }
 );

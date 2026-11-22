@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/AppError';
-import { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import { errors } from 'jose';
 import { AuthenticationError, TokenExpiredError as CustomTokenExpiredError } from '../utils/errors';
 import logger from '../utils/logger';
 
@@ -22,7 +22,7 @@ export const errorHandler = (
     }
 
     // token expiration error
-    if (err instanceof TokenExpiredError) {
+    if (err instanceof errors.JWTExpired) {
         const tokenError = new CustomTokenExpiredError();
         res.status(tokenError.statusCode).json({
             error: tokenError.error,
@@ -33,7 +33,7 @@ export const errorHandler = (
     }
 
     // invalid token error
-    if (err instanceof JsonWebTokenError) {
+    if (err instanceof errors.JOSEError) {
         const authError = new AuthenticationError('Invalid token');
         res.status(authError.statusCode).json({
             error: authError.error,

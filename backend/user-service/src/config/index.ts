@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { SignOptions } from "jsonwebtoken";
 
 dotenv.config();
 
@@ -13,11 +12,10 @@ export default {
         uri: process.env.MONGO_URI || 'mongodb://root:root@mongodb:27017/users_db?authSource=admin'
     },
 
-    // JWT token secret + expiration configuration
+    // JWT token expiration configuration
     jwt: {
-        secret: process.env.JWT_SECRET || 'key-that-should-be-changed',
-        accessExpiresIn: (process.env.JWT_ACCESS_EXPIRE || '2d') as SignOptions['expiresIn'],
-        refreshExpiresIn: (process.env.JWT_REFRESH_EXPIRE || '14d') as SignOptions['expiresIn']
+        accessExpiresIn: (process.env.JWT_ACCESS_EXPIRE || '2d'),
+        refreshExpiresIn: (process.env.JWT_REFRESH_EXPIRE || '14d')
     },
 
     // CORS

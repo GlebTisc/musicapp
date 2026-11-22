@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ========== NGINX ==========
   nginx:
@@ -45,22 +43,24 @@ services:
       context: ./backend/user-service
       dockerfile: Dockerfile
     container_name: music-user-service
-    ports:
-      - "8002:3000"
     env_file:
       - .env
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - MONGO_URI=mongodb://root:${MONGO_ROOT_PASSWORD}@mongodb:27017/users_db?authSource=admin
-      - JWT_SECRET=${JWT_SECRET}
+      - MONGO_URI=mongodb://root:${MONGO_ROOT_PASSWORD}@mongo:27017/users_db?authSource=admin
       - JWT_REFRESH_EXPIRE=${JWT_REFRESH_EXPIRE}
       - JWT_ACCESS_EXPIRE=${JWT_ACCESS_EXPIRE}
+      - JWT_PRIVATE_KEY_PATH=/run/secrets/jwt_private_key
+      - JWT_PUBLIC_KEY_PATH=/run/secrets/jwt_public_key
+    secrets:
+      - jwt_private_key
+      - jwt_public_key
     volumes:
       - ./backend/user-service:/app
       - /app/node_modules
     depends_on:
-      - mongodb
+      - mongo
     networks:
       - music-network
 
@@ -70,14 +70,12 @@ services:
       context: ./backend/music-service
       dockerfile: Dockerfile
     container_name: music-music-service
-    ports:
-      - "8003:80"
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
       - APP_URL=http://localhost:8003
       - DB_CONNECTION=mongodb
-      - DB_HOST=mongodb
+      - DB_HOST=mongo
       - DB_PORT=27017
       - DB_DATABASE=music_db
       - DB_USERNAME=root
@@ -86,7 +84,7 @@ services:
       - ./backend/music-service:/var/www/html
       - /var/www/html/vendor
     depends_on:
-      - mongodb
+      - mongo
     networks:
       - music-network
 
@@ -105,7 +103,7 @@ services:
       - music-network
 
   # ========== MONGODB ==========
-  mongodb:
+  mongo:
     image: mongo:6.0
     container_name: music-mongodb
     ports:
@@ -127,11 +125,11 @@ services:
     environment:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_ROOT_PASSWORD}
-      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_SERVER=mongo
       - ME_CONFIG_BASICAUTH_USERNAME=localuser
       - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_EXPRESS_PASSWORD}
     depends_on:
-      - mongodb
+      - mongo
     networks:
       - music-network
 
@@ -150,3 +148,9 @@ networks:
 
 volumes:
   mongodb-data:
+
+secrets:
+  jwt_private_key:
+    file: ./secrets/private.pem
+  jwt_public_key:
+    file: ./secrets/public.pem

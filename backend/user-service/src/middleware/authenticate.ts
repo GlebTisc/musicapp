@@ -1,9 +1,9 @@
 import type { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { catchAsync } from '../utils/catchAsync';
 import { isTokenPayload } from "../utils/typeguards";
+import { jwtVerify } from 'jose';
+import { getPublicKey } from 'src/utils/keys';
 import User from '../models/User';
-import config from '../config';
 import { AuthenticationError, TokenExpiredError } from 'src/utils/errors';
 
 export const authenticate = catchAsync(
@@ -15,14 +15,15 @@ export const authenticate = catchAsync(
             throw new AuthenticationError('You are not logged in!');
         }
 
-        const decoded = jwt.verify(accessToken, config.jwt.secret);
+        const key = await getPublicKey();
+        const { payload } = await jwtVerify(accessToken, key, { algorithms: ['RS256'] });
 
         // check the type of decoded tocken
-        if (!isTokenPayload(decoded)) {
+        if (!isTokenPayload(payload)) {
             throw new TokenExpiredError('Invalid token payload');
         }
 
-        const currentUser = await User.findById(decoded.id);
+        const currentUser = await User.findById(payload.id);
 
         // if user's not found - throw an error
         if (!currentUser) {

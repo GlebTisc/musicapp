@@ -1,8 +1,6 @@
-import jwt from 'jsonwebtoken';
 import UserModel, { User } from '../models/User';
 import { createTokenPair } from './refreshTokenService';
 import { z } from 'zod';
-import config from '../config';
 import type { ValidationError } from '../utils/AppError';
 import { isTokenPayload } from '../utils/typeguards';
 import { AuthenticationError, TokenExpiredError, ValidationFailedError } from "../utils/errors";
@@ -103,37 +101,4 @@ export const login = async (data: LoginDTO): Promise<AuthResponse> => {
 
     const tokens = await createTokens(user._id.toString(), user.role);
     return { ...tokens, user: extractUserFields(user) };
-};
-
-/**
- * Validate JWT access token
- * 
- * @param accessToken 
- * @returns 
- */
-export const validateAccessToken = async (accessToken: string) => {
-    const decoded = jwt.verify(accessToken, config.jwt.secret);
-
-    // check if payload exists
-    if (!decoded) {
-        throw new TokenExpiredError('Invalid payload data');
-    }
-
-    // check if token payload is valid
-    if (!isTokenPayload(decoded)) {
-        throw new TokenExpiredError('Invalid payload data');
-    }
-
-    const user = await UserModel.findById(decoded.id);
-
-    if (!user) {
-        throw new AuthenticationError('User not found');
-    }
-
-    return {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        role: user.role,
-    };
 };
