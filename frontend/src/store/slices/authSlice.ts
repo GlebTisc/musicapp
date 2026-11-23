@@ -1,8 +1,8 @@
-import { AuthState } from "@/types/auth";
+import { AuthState } from "@/types";
 import { createSlice, isRejectedWithValue, PayloadAction } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../typedThunk";
 import * as authApi from "@/lib/auth";
-import { LoginCredentials, RegisterCredentials, User } from "@/types/auth";
+import { LoginCredentials, RegisterCredentials, User } from "@/types";
 import { isApiErrorPayload, toApiError } from "@/lib/apiError";
 import { isAxiosError } from "axios";
 
@@ -117,7 +117,7 @@ const authSlice = createSlice({
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
                     : action.error.message || "Unknown error"
-                ;
+                    ;
             });
 
         // register
@@ -136,7 +136,7 @@ const authSlice = createSlice({
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
                     : action.error.message || "Unknown error"
-                ;
+                    ;
             });
 
         // logout
@@ -158,7 +158,7 @@ const authSlice = createSlice({
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
                     : "Logout failed, but you have been logged out locally"
-                ;
+                    ;
             });
     }
 });

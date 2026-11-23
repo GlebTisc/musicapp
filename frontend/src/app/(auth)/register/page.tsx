@@ -6,47 +6,18 @@ import AuthFormHeader from "@/components/auth/AuthFormHeader";
 import InputPassword from "@/components/auth/InputPassword";
 import InputText from "@/components/InputText";
 import RouterLink from "@/components/RouterLink";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/auth";
-import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { registerUser } from "@/store/slices/authSlice";
 import { isApiErrorPayload } from "@/lib/apiError";
 import FieldErrors from "@/components/FieldErrors";
 import FormSkeleton from "@/components/skeletons/FormSkeleton";
+import { RegisterDTO, RegisterSchema } from "@/schemas/auth";
 
 // key for form exceptions
 const FORM_ERROR_KEY = "_form";
-
-const RegisterSchema = z.object({
-    email: z.email('Invalid email format'),
-    username: z.string()
-        .min(4, 'Name must be at least 4 characters')
-        .max(50)
-        .regex(
-            /^[a-zA-Z][a-zA-Z0-9]+$/,
-            'Username must contain letters and numbers'
-        )
-    ,
-    password: z.string()
-        .min(10, 'Password must be at least 10 characters')
-        .max(128)
-        .regex(
-            /^(?=.{10,128}$)[a-zA-Z][a-zA-Z0-9]*[!@#$%^&*()_+\-=,.?][a-zA-Z0-9]+$/,
-            'Password must be at least 10 characters long, contain 1 symbol, letters and numbers'
-        )
-    ,
-    confirmPassword: z.string()
-}).refine(
-    (data) => data.password === data.confirmPassword,
-    {
-        message: "Passwords don't match",
-        path: ["confirmPassword"],
-    }
-);
-
-type RegisterDTO = z.infer<typeof RegisterSchema>;
 
 export default function RegisterPage() {
     const router = useRouter();

@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { ApiErrorDetail, ApiErrorPayload } from "@/types/auth";
+import { ApiErrorDetail, ApiErrorPayload } from "@/types";
 
 // type guard for the details array of an error
 const isValidDetail = (item: unknown): item is ApiErrorDetail => {

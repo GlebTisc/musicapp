@@ -1,9 +1,21 @@
 export interface User {
-    id: string;
+    _id: string;
     username: string;
-    password: string;
+    email: string;
     role: 'user' | 'admin';
 };
+
+export interface Category {
+    _id: string;
+    name: string;
+    slug: string
+}
+
+export interface Music {
+    _id: string;
+    name: string;
+    artist: string
+}
 
 export interface AuthState {
     user: User | null | undefined;
@@ -36,3 +48,6 @@ export interface ApiErrorPayload {
     error?: string;
     details?: ApiErrorDetail[];
 }
+
+// any database row (MongoDB has _id field)
+export type AnyRow = { _id: string } & Record<string, unknown>;

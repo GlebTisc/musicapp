@@ -1,7 +1,6 @@
 "use client"
 
 import { Stack, Button, Divider, Typography, Alert } from "@mui/material";
-import { z } from 'zod';
 import { TextFormat } from "@mui/icons-material";
 import AuthFormHeader from "@/components/auth/AuthFormHeader";
 import InputPassword from "@/components/auth/InputPassword";
@@ -15,16 +14,10 @@ import { loginUser } from "@/store/slices/authSlice";
 import { isApiErrorPayload } from "@/lib/apiError";
 import FieldErrors from "@/components/FieldErrors";
 import FormSkeleton from "@/components/skeletons/FormSkeleton";
+import { type LoginDTO, LoginSchema } from "@/schemas/auth";
 
 // key for form exceptions
 const FORM_ERROR_KEY = "_form";
-
-const LoginSchema = z.object({
-    username: z.string().min(1, 'Username is required').max(50),
-    password: z.string().min(1, 'Password is required').max(128),
-});
-
-type LoginDTO = z.infer<typeof LoginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
