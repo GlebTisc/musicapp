@@ -93,6 +93,7 @@ export const update = catchAsync(
 export const deleteUser = catchAsync(
     async (req: Request, res: Response) => {
         const { id } = getValidated.params<GetUserByIdDTO>(req);
-
+        await userService.deleteUser(id, req.user?._id);
+        res.status(200).json({ status: 'success' });
     }
 )

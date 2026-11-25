@@ -58,16 +58,17 @@ export const updateUser = async (
     return extractUserFields(user);
 };
 
-export const deleteUser = async (
-    id: string,
-    requestingUserId: string,
-    requestingUserRole: string
-): Promise<void> => {
-    if (id !== requestingUserId && requestingUserRole !== 'admin') {
-        throw new ForbiddenError("You can only delete your own account");
+export const deleteUser = async (id: string, userId: string | undefined): Promise<void> => {
+    if (!userId) {
+        throw new ForbiddenError("Unauthorized");
+    }
+
+    if (id === userId) {
+        throw new ForbiddenError("You can't only delete your own account");
     }
 
     const user = await UserModel.findByIdAndDelete(id);
+
     if (!user) {
         throw new NotFoundError("User not found");
     }
