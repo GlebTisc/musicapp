@@ -5,7 +5,7 @@ import { ValidationFailedError } from "../utils/errors";
 import { LoginDTO, RegisterDTO } from 'src/utils/schemas';
 
 export interface UserResponse {
-    id: string;
+    _id: string;
     email: string;
     username: string;
     role: 'user' | 'admin';
@@ -18,7 +18,7 @@ export interface AuthResponse {
 }
 
 export const extractUserFields = (user: User) => ({
-    id: user._id.toString(),
+    _id: user._id.toString(),
     email: user.email,
     username: user.username,
     role: user.role,
@@ -33,26 +33,9 @@ const createTokens = (id: string, role: 'admin' | 'user') => createTokenPair(id,
  * @returns 
  */
 export const register = async (data: RegisterDTO): Promise<AuthResponse> => {
-    let existingUser = await UserModel.findOne({ email: data.email });
-    let details: ValidationError[] = [];
-
-    if (existingUser) {
-        details.push({ field: 'email', message: 'Email already registered' });
-    }
-
-    existingUser = await UserModel.findOne({ username: data.username });
-    if (existingUser) {
-        details.push({ field: 'username', message: 'Username already registered' });
-    }
-
-    // check if validation failed
-    if (details.length > 0) {
-        throw new ValidationFailedError(undefined, details);
-    }
-
+    await validateUserFields(data);
     const user = await UserModel.create(data);
     const tokens = await createTokens(user._id.toString(), user.role);
-
     return { ...tokens, user: extractUserFields(user) };
 };
 
@@ -71,4 +54,23 @@ export const login = async (data: LoginDTO): Promise<AuthResponse> => {
 
     const tokens = await createTokens(user._id.toString(), user.role);
     return { ...tokens, user: extractUserFields(user) };
+};
+
+export const validateUserFields = async (data: RegisterDTO): Promise<void> => {
+    let existingUser = await UserModel.findOne({ email: data.email });
+    let details: ValidationError[] = [];
+
+    if (existingUser) {
+        details.push({ field: 'email', message: 'Email already registered' });
+    }
+
+    existingUser = await UserModel.findOne({ username: data.username });
+    if (existingUser) {
+        details.push({ field: 'username', message: 'Username already registered' });
+    }
+
+    // check if validation failed
+    if (details.length > 0) {
+        throw new ValidationFailedError(undefined, details);
+    }
 };

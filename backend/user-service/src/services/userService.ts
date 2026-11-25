@@ -1,7 +1,7 @@
 import UserModel from '../models/User';
-import { UserResponse, extractUserFields } from './authService';
+import { UserResponse, extractUserFields, validateUserFields } from './authService';
 import { ForbiddenError, NotFoundError } from '../utils/errors';
-import { GetUserDTO, UpdateUserDTO } from 'src/utils/schemas';
+import { GetUserDTO, RegisterDTO, UpdateUserDTO } from 'src/utils/schemas';
 
 /**
  * Get list of users + count them depending on query params
@@ -36,16 +36,16 @@ export const getUserById = async (id: string): Promise<UserResponse> => {
     return extractUserFields(user);
 };
 
+export const createUser = async (data: RegisterDTO): Promise<UserResponse> => {
+    await validateUserFields(data);
+    const user = await UserModel.create(data);
+    return extractUserFields(user);
+};
+
 export const updateUser = async (
     id: string,
-    data: UpdateUserDTO,
-    requestingUserId: string,
-    requestingUserRole: string
+    data: UpdateUserDTO
 ): Promise<UserResponse> => {
-    if (id !== requestingUserId && requestingUserRole !== 'admin') {
-        throw new ForbiddenError("You can only update your own profile");
-    }
-
     const user = await UserModel.findByIdAndUpdate(id, data, {
         new: true,
         runValidators: true,

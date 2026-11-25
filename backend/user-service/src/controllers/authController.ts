@@ -10,7 +10,7 @@ import { RegisterDTO, LoginDTO } from 'src/utils/schemas';
  */
 export const register = catchAsync(
     async (req: Request, res: Response) => {
-        const validatedData = getValidated<RegisterDTO>(req);
+        const validatedData = getValidated.body<RegisterDTO>(req);
         const { user, accessToken, refreshToken } = await authService.register(validatedData);
         setAccessTokenCookie(res, accessToken);
         setRefreshTokenCookie(res, refreshToken);
@@ -23,7 +23,7 @@ export const register = catchAsync(
  */
 export const login = catchAsync(
     async (req: Request, res: Response) => {
-        const validatedData = getValidated<LoginDTO>(req);
+        const validatedData = getValidated.body<LoginDTO>(req);
         const { user, accessToken, refreshToken } = await authService.login(validatedData);
         setAccessTokenCookie(res, accessToken);
         setRefreshTokenCookie(res, refreshToken);

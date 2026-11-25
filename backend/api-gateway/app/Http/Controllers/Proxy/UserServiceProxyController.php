@@ -47,16 +47,41 @@ class UserServiceProxyController extends Controller
     }
 
 
-    public function getList(Request $request)
+    public function get(Request $request)
     {
         $queryParams = $request->only(['page', 'search']);
-        return $this->proxyResponse($this->client->getList($request->cookies->all(), $queryParams));
+        return $this->proxyResponse($this->client->get($request->cookies->all(), $queryParams));
     }
 
 
-    public function get(Request $request, $id)
+    public function getOne(Request $request, string $id)
     {
-        return $this->proxyResponse($this->client->get($request->cookies->all(), $id));
+        return $this->proxyResponse($this->client->getOne($request->cookies->all(), $id));
+    }
+
+
+    public function create(Request $request)
+    {
+        return $this->proxyResponse($this->client->create(
+            $request->cookies->all(),
+            $request->only(['username', 'email', 'password', 'role'])
+        ));
+    }
+
+
+    public function update(Request $request, string $id)
+    {
+        return $this->proxyResponse($this->client->update(
+            $request->cookies->all(),
+            $request->only(['username', 'email', 'role']),
+            $id
+        ));
+    }
+
+
+    public function delete(Request $request, string $id)
+    {
+        return $this->proxyResponse($this->client->delete($request->cookies->all(), $id));
     }
 
 

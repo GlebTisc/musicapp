@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Box, Typography } from '@mui/material';
-import { UserSchema } from '@/schemas/admin';
+import { UserItemApiResponse } from '@/schemas/admin';
 import { proxyFetch } from '@/lib/proxyFetch';
 import { updateUser } from '../../../actions';
 import UserForm from '@/components/admin/UserForm';
@@ -14,8 +14,8 @@ export default async function EditUserPage({
 
     const result = await proxyFetch({
         method: 'GET',
-        path: `/api/user/${id}`,
-        schema: UserSchema,
+        path: `/api/user/getOne/${id}`,
+        schema: UserItemApiResponse,
     });
 
     if (!result.ok) {
@@ -23,7 +23,7 @@ export default async function EditUserPage({
         throw new Error(result.message);
     }
 
-    const user = result.data;
+    const user = result.data.data;
     const action = updateUser.bind(null, id);
 
     return (

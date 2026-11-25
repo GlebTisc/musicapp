@@ -1,4 +1,4 @@
-import { success, z } from 'zod';
+import { z } from 'zod';
 import { PasswordField, RoleField, UserCoreSchema } from './user';
 import { CategorySchema } from './category';
 import { MusicSchema } from './music';
@@ -18,11 +18,20 @@ const listResponse = <T extends z.ZodType>(item: T) =>
         }),
     });
 
+const singleApiItemResponse = <T extends z.ZodType>(item: T) =>
+    z.object({
+        status: z.string(),
+        data: item
+    });
+
 export const UserSchema = UserCoreSchema.extend({
     _id: z.string().min(1),
     role: RoleField
 });
+
 export type User = z.infer<typeof UserSchema>;
+
+export const UserItemApiResponse = singleApiItemResponse(UserSchema);
 
 export const UserListSchema = listResponse(UserSchema);
 

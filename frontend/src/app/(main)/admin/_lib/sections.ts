@@ -10,7 +10,7 @@ export type Column<T> = {
 export const adminSections = {
     users: {
         label: "Users",
-        endpoint: "/api/user/getList",
+        endpoint: "/api/user",
         schema: UserListSchema,
         columns: [
             { key: "email", label: "Email" },

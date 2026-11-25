@@ -1,53 +1,49 @@
 import { Request, Response, NextFunction } from 'express';
 import { z, ZodError } from 'zod';
-import { ValidationError } from '../utils/AppError';
+import type { ValidationError } from '../utils/AppError';
 import { ValidationFailedError } from '../utils/errors';
 
 type RequestSource = 'body' | 'query' | 'params';
 type ValidatedKey = 'validated' | 'validatedQuery' | 'validatedParams';
 
 const SOURCE_MAP: Record<RequestSource, ValidatedKey> = {
-    'body': 'validated',
-    'query': 'validatedQuery',
-    'params': 'validatedParams'
-}
+    body: 'validated',
+    query: 'validatedQuery',
+    params: 'validatedParams',
+};
 
-const createValidator = <T>(schema: z.ZodType<T>, source: RequestSource) => {
-    const key = SOURCE_MAP[source];
-
-    return (req: Request, _res: Response, next: NextFunction) => {
-        try {
-            req[key] = schema.parse(req[source]);
-            next();
-        } catch (error: unknown) {
-            handleError(error, next);
-        }
-    }
-}
-
-export const validateBody = <T>(schema: z.ZodType<T>) => createValidator(schema, 'body');
-
-export const getValidated = <T>(req: Request): T => req.validated as T;
-
-export const validateQuery = <T>(schema: z.ZodType<T>) => createValidator(schema, 'query');
-
-export const getValidatedQuery = <T>(req: Request): T => req.validatedQuery as T;
-
-export const validatedParams = <T>(schema: z.ZodType<T>) => createValidator(schema, 'params');
-
-export const getValidatedParams = <T>(req: Request): T => req.validatedParams as T;
-
-
-const handleError = (error: unknown, next: NextFunction) => {
-    // check type of an error
+const handleError = (error: unknown, next: NextFunction): void => {
     if (error instanceof ZodError) {
         const details: ValidationError[] = error.issues.map((err) => ({
             field: err.path.join('.'),
-            message: err.message
-        }))
-
+            message: err.message,
+        }));
         next(new ValidationFailedError(undefined, details));
-    } else {
-        next(error)
+        return;
     }
-}
+    next(error);
+};
+
+const createValidator = (schema: z.ZodType, source: RequestSource) => {
+    const key = SOURCE_MAP[source];
+    return (req: Request, _res: Response, next: NextFunction): void => {
+        try {
+            req[key] = schema.parse(req[source]);
+            next();
+        } catch (error) {
+            handleError(error, next);
+        }
+    };
+};
+
+export const validate = {
+    body: (schema: z.ZodType) => createValidator(schema, 'body'),
+    query: (schema: z.ZodType) => createValidator(schema, 'query'),
+    params: (schema: z.ZodType) => createValidator(schema, 'params'),
+} as const;
+
+export const getValidated = {
+    body: <T>(req: Request): T => req.validated as T,
+    query: <T>(req: Request): T => req.validatedQuery as T,
+    params: <T>(req: Request): T => req.validatedParams as T,
+};

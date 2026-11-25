@@ -70,20 +70,50 @@ class UserServiceClient
     /**
      * Get list of users
      */
-    public function getList(array $cookies, array $queryParams): Response
+    public function get(array $cookies, array $queryParams): Response
     {
         return $this->withCookies($this->client(), $cookies)
-            ->get('/user/getList', $queryParams);
+            ->get('/user/get', $queryParams);
     }
 
 
     /**
      * Get user by id
      */
-    public function get(array $cookies, string $id): Response
+    public function getOne(array $cookies, string $id): Response
     {
         return $this->withCookies($this->client(), $cookies)
-            ->get("/user/get/" . rawurlencode($id));
+            ->get("/user/getOne/" . rawurlencode($id));
+    }
+
+
+    /**
+     * Create new user
+     */
+    public function create(array $cookies, array $credentials): Response
+    {
+        return $this->withCookies($this->client(), $cookies)
+            ->post("/user/create", $credentials);
+    }
+
+
+    /**
+     * Update the user
+     */
+    public function update(array $cookies, array $credentials, string $id): Response
+    {
+        return $this->withCookies($this->client(), $cookies)
+            ->patch("/user/update/" . rawurlencode($id), $credentials);
+    }
+
+
+    /**
+     * Delete the user
+     */
+    public function delete(array $cookies, string $id): Response
+    {
+        return $this->withCookies($this->client(), $cookies)
+            ->delete('/user/delete/' . rawurlencode($id));
     }
 
 

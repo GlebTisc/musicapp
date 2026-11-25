@@ -45,6 +45,16 @@ export const GetUserParamsSchema = z.object({
 
 export type GetUserDTO = z.infer<typeof GetUserParamsSchema>;
 
+export const GetUserByIdSchema = z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId')
+});
+
+export type GetUserByIdDTO = z.infer<typeof GetUserByIdSchema>;
+
+export const CreateUserSchema = UserCoreSchema.extend({ password: passwordField, role: roleField });
+
+export type CreateUserDTO = z.infer<typeof CreateUserSchema>;
+
 export const UpdateUserSchema = UserCoreSchema.extend({ role: roleField });
 
 export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>;

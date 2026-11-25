@@ -49,7 +49,7 @@ export async function createUser(
 
     const result = await proxyFetch({
         method: 'POST',
-        path: '/api/admin/users',
+        path: '/api/user/create',
         body: parsed.data,
         revalidate: '/admin/users',
     });
@@ -87,7 +87,7 @@ export async function updateUser(
 
     const result = await proxyFetch({
         method: 'PATCH',
-        path: `/api/admin/users/${id}`,
+        path: `/api/user/update/${id}`,
         body: parsed.data,
         revalidate: [`/admin/users/${id}`, '/admin/users'],
     });
