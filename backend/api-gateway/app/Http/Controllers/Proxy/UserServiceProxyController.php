@@ -49,7 +49,14 @@ class UserServiceProxyController extends Controller
 
     public function getList(Request $request)
     {
-        return $this->proxyResponse($this->client->getList($request->query()));
+        $queryParams = $request->only(['page', 'search']);
+        return $this->proxyResponse($this->client->getList($request->cookies->all(), $queryParams));
+    }
+
+
+    public function get(Request $request, $id)
+    {
+        return $this->proxyResponse($this->client->get($request->cookies->all(), $id));
     }
 
 

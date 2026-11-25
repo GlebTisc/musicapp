@@ -13,4 +13,6 @@ Route::prefix('/user')->group(function () {
     Route::get('/me', [UserServiceProxyController::class, 'me']);
     Route::post('/logout', [UserServiceProxyController::class, 'logout']);
     Route::get('/getList', [UserServiceProxyController::class, 'getList']);
+    Route::get('/{id}', [UserServiceProxyController::class, 'get'])
+        ->where('id', '[a-zA-Z0-9_]{1,64}');
 });

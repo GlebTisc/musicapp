@@ -8,6 +8,7 @@ declare global {
             user?: UserResponse;
             validated?: unknown;
             validatedQuery?: unknown;
+            validatedParams?: unknown;
         }
     }
 }

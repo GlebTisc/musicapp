@@ -1,22 +1,25 @@
 "use client"
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Pagination as MuiPagination, PaginationItem, type PaginationProps } from "@mui/material";
 import RouterLink from "./RouterLink";
-import { Suspense } from "react";
-import PaginationSkeleton from "./skeletons/PaginationSkeleton";
 
 type CustomPaginationProps = PaginationProps & {
-    count: number
+    count: number,
+    page: number,
+    search?: string
 };
 
-function Pagination({ count, ...props }: CustomPaginationProps) {
+export default function Pagination({ count, page, search, ...props }: CustomPaginationProps) {
     const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const currentPage = Number(searchParams.get('page')) || 1;
 
     const createPageURL = (page: number | string | null) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams();
+
+        // if search is set - add it to params
+        if (search) {
+            params.set('search', search);
+        }
 
         // if page = 1 (by default) - remove from params
         if (Number(page) === 1) {
@@ -26,12 +29,12 @@ function Pagination({ count, ...props }: CustomPaginationProps) {
         }
 
         const queryString = params.toString();
-        return queryString && page ? `${pathname}?${queryString}` : pathname;
+        return queryString ? `${pathname}?${queryString}` : pathname;
     }
 
     return (<MuiPagination
         count={count}
-        page={currentPage}
+        page={page}
         renderItem={(item) => (
             <PaginationItem
                 {...item}
@@ -41,12 +44,4 @@ function Pagination({ count, ...props }: CustomPaginationProps) {
         )}
         {...props}
     />);
-}
-
-export default function PaginationWrapper({ count, ...props }: CustomPaginationProps) {
-    return (
-        <Suspense fallback={<PaginationSkeleton count={3} />}>
-            <Pagination count={count} {...props} />
-        </Suspense>
-    );
 }

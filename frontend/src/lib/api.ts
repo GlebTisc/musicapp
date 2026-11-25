@@ -1,7 +1,13 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
+/**
+ * API client.
+ *
+ * All request go through the Next.js API routes (/api/proxy), that handles token refreshes
+ */
 export const api: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    // all requests proxy to the Next.js
+    baseURL: '/api/proxy',
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
@@ -9,43 +15,29 @@ export const api: AxiosInstance = axios.create({
     }
 })
 
-api.interceptors.request.use((config) => {
-    // set headers for requests
-    config.headers['Content-Type'] = 'application/json';
-    config.headers['Accept'] = 'application/json';
-    return config;
-})
-
-// refresh block: only 1 request should be handled at a time
-let refreshPromise: Promise<unknown> | null = null;
-
+/**
+ * Response interceptor.
+ *
+ * Handles redirect when token refresh is failed
+ */
 api.interceptors.response.use(
     (response) => response,
-    async (error: AxiosError) => {
-        // check if it's 401 error and not a retry
-        if (error.response?.status === 401 && error.config && !error.config?.retry) {
-            // never refresh the refresh request
-            if (error.config.url?.includes('api/auth/refresh')) {
-                return Promise.reject(error);
-            }
+    (error: AxiosError) => {
+        // token refresh is failed
+        if (error.response?.status === 401) {
+            // check if it's auth endpoint
+            const url = error.config?.url || '';
+            const skipRedirect = url.includes('api/auth/login') ||
+                url.includes('api/auth/register') ||
+                url.includes('api/user/me');
 
-            error.config.retry = true;
+            // redirect to the login page via window
+            if (!skipRedirect && typeof window !== 'undefined') {
+                const path = window.location.pathname;
 
-            // check if refresh is already pending
-            if (!refreshPromise) {
-                refreshPromise = api.post('api/auth/refresh', {}).finally(() => {
-                    refreshPromise = null;
-                });
-            }
-
-            // try to refresh token
-            try {
-                await refreshPromise;
-
-                // retry the initial request
-                return api(error.config)
-            } catch (refreshError: unknown) {
-                return Promise.reject(refreshError);
+                if (path !== '/login' && path !== '/register') {
+                    window.location.href = '/login';
+                }
             }
         }
 

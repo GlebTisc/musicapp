@@ -67,9 +67,23 @@ class UserServiceClient
     }
 
 
-    public function getList(string $queryParams): Response
+    /**
+     * Get list of users
+     */
+    public function getList(array $cookies, array $queryParams): Response
     {
-        return $this->client()->get('/user/getList', $queryParams);
+        return $this->withCookies($this->client(), $cookies)
+            ->get('/user/getList', $queryParams);
+    }
+
+
+    /**
+     * Get user by id
+     */
+    public function get(array $cookies, string $id): Response
+    {
+        return $this->withCookies($this->client(), $cookies)
+            ->get("/user/get/" . rawurlencode($id));
     }
 
 

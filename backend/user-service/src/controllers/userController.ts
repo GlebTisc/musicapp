@@ -46,11 +46,12 @@ export const logout = catchAsync(
 );
 
 /**
- * Get users and return them to the admin
+ * Get users list depending on the filters
  */
 export const getList = catchAsync(
     async (req: Request, res: Response) => {
         const validatedQueryParams = getValidatedQuery<GetUserDTO>(req);
-        res.status(200).json({ status: 'success', data: userService.getListOfUsers(validatedQueryParams) })
+        const result = await userService.getListOfUsers(validatedQueryParams);
+        res.status(200).json({ status: 'success', data: result })
     }
 )

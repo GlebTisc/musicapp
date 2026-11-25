@@ -3,65 +3,50 @@ import { adminSections, isSection } from "../_lib/sections";
 import { notFound } from "next/navigation";
 import AdminTable from "@/components/admin/AdminTable";
 import { proxyFetch } from "@/lib/proxyFetch";
-import { isAdminResponse } from "@/typeguards";
 import { AnyRow } from "@/types";
+import { Box } from "@mui/material";
+import { Route } from "next";
 
-type UserResponse = {
-    status?: string | number,
-    error?: string,
-    message?: string,
-    data?: {
-        users: object[],
-        total: number
-    }
-};
+const PER_PAGE = 10;
 
-export default async function AdminUsersPage({
-    params, searchParams
-}: { params: Promise<{ section: string }>; searchParams: Promise<{ page?: string, search?: string }> }) {
+export default async function AdminSectionPage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ section: string }>;
+    searchParams: Promise<{ page?: string; search?: string }>;
+}) {
     const { section } = await params;
+    if (!isSection(section)) notFound();
 
-    // check if section is valid
-    if (!isSection(section)) {
-        notFound();
-    }
-
-    const { page = 1, search = '' } = await searchParams;
+    const { page: pageParam = '1', search = '' } = await searchParams;
+    const page = Math.max(1, Number(pageParam) || 1);
     const config = adminSections[section];
 
-    const res = await proxyFetch({
-        method: "GET",
-        path: `${config.endpoint}?page=${page}&search=${search}`
+    const result = await proxyFetch({
+        method: 'GET',
+        path: config.endpoint,
+        searchParams: { page, search: search || undefined },
+        schema: config.schema,
     });
 
-    // handle an error
-    if (!res?.ok) {
-        throw new Error(`Couldn't load the section: HTTP ${res?.status}`)
-    }
+    if (!result.ok) throw new Error(result.message);
 
-    let json: unknown;
+    const { items, total = items.length } = (result.data as {
+        data: { items: AnyRow[]; total?: number };
+    }).data;
 
-    try {
-        json = await res.json();
-    } catch {
-        throw new Error('API returned invalid data structure')
-    }
-
-    // check the body of the response
-    if (!isAdminResponse(json)) {
-        throw new Error('API returned unsupported json')
-    }
-
-    const items: AnyRow[] = json.data.items;
+    const pageCount = Math.max(1, Math.ceil(total / PER_PAGE));
 
     return (
-        <>
+        <Box sx={{ width: '100%' }}>
             <AdminToolbar
-                createHref={`/admin/${section}`}
+                createHref={`/admin/${section}/create` as Route}
                 searchValue={search}
-                page={Number(page)}
-                totalPages={0}
+                page={page}
+                totalPages={pageCount}
             />
-        </>
+            <AdminTable section={section} columns={config.columns} rows={items} />
+        </Box>
     );
 }

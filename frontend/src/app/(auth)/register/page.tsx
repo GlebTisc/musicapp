@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/auth";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { registerUser } from "@/store/slices/authSlice";
-import { isApiErrorPayload } from "@/lib/apiError";
+import { detailsToFieldErrors, isApiErrorPayload } from "@/lib/apiError";
 import FieldErrors from "@/components/FieldErrors";
 import FormSkeleton from "@/components/skeletons/FormSkeleton";
 import { RegisterDTO, RegisterSchema } from "@/schemas/auth";
@@ -91,30 +91,11 @@ export default function RegisterPage() {
             await dispatch(registerUser(payload)).unwrap();
             router.replace('/');
         } catch (error: unknown) {
-            const newErrors: Record<string, string[]> = {};
-
-            const addError = (key: string, message: string) => {
-                if (!newErrors[key]) {
-                    newErrors[key] = [];
-                }
-                newErrors[key].push(message);
-            };
-
-            // check if it's known error
-            if (isApiErrorPayload(error)) {
-                if (error.details && error.details.length > 0) {
-                    error.details.forEach((detail) => {
-                        const key = detail.field || FORM_ERROR_KEY;
-                        addError(key, detail.message);
-                    });
-                } else {
-                    addError(FORM_ERROR_KEY, error.message || 'An error occurred');
-                }
-            } else {
-                addError(FORM_ERROR_KEY, 'Unknown error occured. Please try again later...');
-            }
-
-            setFieldErrors(newErrors);
+            setFieldErrors(
+                isApiErrorPayload(error)
+                    ? detailsToFieldErrors(error)
+                    : { FORM_ERROR_KEY: ['Unknown error occured. Please try again later...'] }
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -138,6 +119,7 @@ export default function RegisterPage() {
                 <InputText
                     label="Email"
                     name="email"
+                    type="email"
                     value={formData.email}
                     onChange={handleChange}
                     startIcon={Email}

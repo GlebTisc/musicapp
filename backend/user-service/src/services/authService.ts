@@ -1,38 +1,8 @@
 import UserModel, { User } from '../models/User';
 import { createTokenPair } from './refreshTokenService';
-import { z } from 'zod';
 import type { ValidationError } from '../utils/AppError';
-import { isTokenPayload } from '../utils/typeguards';
-import { AuthenticationError, TokenExpiredError, ValidationFailedError } from "../utils/errors";
-
-export const RegisterSchema = z.object({
-    email: z.email('Invalid email format'),
-    username: z.string()
-        .min(2, 'Name must be at least 2 characters')
-        .max(50)
-        .regex(
-            /^[a-zA-Z][a-zA-Z0-9]+$/,
-            'Username must contain letters and numbers'
-        )
-    ,
-    password: z.string()
-        .min(8, 'Password must be at least 8 characters')
-        .max(128)
-        .regex(
-            /^(?=.{10,128}$)[a-zA-Z][a-zA-Z0-9]*[!@#$%^&*()_+\-=,.?][a-zA-Z0-9]+$/,
-            'Password must be at least 10 characters long, contain 1 symbol, letters and numbers'
-        )
-    ,
-});
-
-export type RegisterDTO = z.infer<typeof RegisterSchema>;
-
-export const LoginSchema = z.object({
-    username: z.string().min(1, 'Username is required').max(50),
-    password: z.string().min(1, 'Password is required').max(128),
-});
-
-export type LoginDTO = z.infer<typeof LoginSchema>;
+import { ValidationFailedError } from "../utils/errors";
+import { LoginDTO, RegisterDTO } from 'src/utils/schemas';
 
 export interface UserResponse {
     id: string;

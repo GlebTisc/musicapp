@@ -4,6 +4,7 @@ import { Column, SectionKey } from "@/app/(main)/admin/_lib/sections";
 import { Edit } from "@mui/icons-material";
 import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import Link from "next/link";
+import { DeleteButton } from "./DeleteButton";
 
 export default function AdminTable<T extends { _id: string }>({
     section, columns, rows
@@ -51,7 +52,7 @@ export default function AdminTable<T extends { _id: string }>({
                             <IconButton LinkComponent={Link} href={`/admin/${section}/${String(row._id)}/edit`} color="secondary">
                                 <Edit />
                             </IconButton>
-                            {/* DELETE button should be here */}
+                            <DeleteButton section={section} id={row._id} />
                         </TableCell>
                     </TableRow>
                 ))}

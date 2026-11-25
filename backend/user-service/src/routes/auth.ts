@@ -2,9 +2,9 @@ import { Router } from 'express';
 import * as authController from '../controllers/authController';
 import { validateBody } from '../middleware/validate';
 import * as refreshController from '../controllers/refreshController';
-import { RegisterSchema, LoginSchema } from '../services/authService';
 import { tryRefresh } from 'src/middleware/tryRefresh';
 import { authenticate } from 'src/middleware/authenticate';
+import { RegisterSchema, LoginSchema } from 'src/utils/schemas';
 
 const router = Router();
 

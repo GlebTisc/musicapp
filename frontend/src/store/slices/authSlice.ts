@@ -1,5 +1,5 @@
 import { AuthState } from "@/types";
-import { createSlice, isRejectedWithValue, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "../typedThunk";
 import * as authApi from "@/lib/auth";
 import { LoginCredentials, RegisterCredentials, User } from "@/types";
@@ -20,7 +20,7 @@ export const checkAuth = createAppAsyncThunk(
             const user = await authApi.checkAuthStatus();
             return user;
         } catch (error: unknown) {
-            // check if it's an authentication error
+            // 401 status (token refresh failed)
             if (isAxiosError(error) && error.response?.status === 401) {
                 return rejectWithValue('Guest')
             }
@@ -116,8 +116,7 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
-                    : action.error.message || "Unknown error"
-                    ;
+                    : action.error.message || "Unknown error";
             });
 
         // register
@@ -135,8 +134,7 @@ const authSlice = createSlice({
                 state.isLoading = false;
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
-                    : action.error.message || "Unknown error"
-                    ;
+                    : action.error.message || "Unknown error";
             });
 
         // logout
@@ -157,10 +155,10 @@ const authSlice = createSlice({
                 state.user = null;
                 state.error = isApiErrorPayload(action.payload)
                     ? action.payload.message
-                    : "Logout failed, but you have been logged out locally"
-                    ;
+                    : "Logout failed, but you have been logged out locally";
             });
     }
 });
 
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;

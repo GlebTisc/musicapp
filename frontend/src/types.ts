@@ -45,7 +45,7 @@ export interface ApiErrorDetail {
 
 export interface ApiErrorPayload {
     message: string;
-    error?: string;
+    error: string;
     details?: ApiErrorDetail[];
 }
 

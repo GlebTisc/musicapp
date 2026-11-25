@@ -1,3 +1,4 @@
+import { UserListSchema } from "@/schemas/admin";
 import { Category, Music, User } from "@/types";
 
 export type Column<T> = {
@@ -9,7 +10,8 @@ export type Column<T> = {
 export const adminSections = {
     users: {
         label: "Users",
-        endpoint: "/api/user",
+        endpoint: "/api/user/getList",
+        schema: UserListSchema,
         columns: [
             { key: "email", label: "Email" },
             { key: "username", label: "Username" },
@@ -19,6 +21,7 @@ export const adminSections = {
     categories: {
         label: "Categories",
         endpoint: "/api/category",
+        schema: undefined,
         columns: [
             { key: "name", label: "Name" },
             { key: "slug", label: "Slug" }
@@ -27,6 +30,7 @@ export const adminSections = {
     music: {
         label: "Music",
         endpoint: "/api/music",
+        schema: undefined,
         columns: [
             { key: "name", label: "Name" },
             { key: "artist", label: "Artist" },

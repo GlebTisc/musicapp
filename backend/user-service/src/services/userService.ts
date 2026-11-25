@@ -1,21 +1,7 @@
-import { z } from 'zod';
 import UserModel from '../models/User';
 import { UserResponse, extractUserFields } from './authService';
 import { ForbiddenError, NotFoundError } from '../utils/errors';
-
-export const GetUserParamsSchema = z.object({
-    page: z.coerce.number().int().min(1).default(1),
-    search: z.string().trim().min(1).max(255).optional()
-});
-
-export type GetUserDTO = z.infer<typeof GetUserParamsSchema>;
-
-export const UpdateUserSchema = z.object({
-    username: z.string().min(2).max(50).optional(),
-    email: z.email().optional(),
-});
-
-export type UpdateUserDTO = z.infer<typeof UpdateUserSchema>;
+import { GetUserDTO, UpdateUserDTO } from 'src/utils/schemas';
 
 /**
  * Get list of users + count them depending on query params
@@ -39,7 +25,7 @@ export const getListOfUsers = async ({ page, search }: GetUserDTO) => {
         UserModel.countDocuments(query)
     ]);
 
-    return { users, total };
+    return { items: users, total };
 }
 
 export const getUserById = async (id: string): Promise<UserResponse> => {

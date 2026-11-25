@@ -3,7 +3,7 @@ import * as authService from '../services/authService';
 import { catchAsync } from '../utils/catchAsync';
 import { getValidated } from '../middleware/validate';
 import { setAccessTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
-import type { LoginDTO, RegisterDTO } from '../services/authService';
+import { RegisterDTO, LoginDTO } from 'src/utils/schemas';
 
 /**
  * Register user
@@ -33,6 +33,6 @@ export const login = catchAsync(
 
 export const validate = catchAsync(
     async (req: Request, res: Response) => {
-        res.status(200).json({status: 'success', data: req.user});
+        res.status(200).json({ status: 'success', data: req.user });
     }
 );

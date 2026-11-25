@@ -3,12 +3,13 @@ import { z, ZodError } from 'zod';
 import { ValidationError } from '../utils/AppError';
 import { ValidationFailedError } from '../utils/errors';
 
-type RequestSource = 'body' | 'query';
-type ValidatedKey = 'validated' | 'validatedQuery';
+type RequestSource = 'body' | 'query' | 'params';
+type ValidatedKey = 'validated' | 'validatedQuery' | 'validatedParams';
 
 const SOURCE_MAP: Record<RequestSource, ValidatedKey> = {
     'body': 'validated',
-    'query': 'validatedQuery'
+    'query': 'validatedQuery',
+    'params': 'validatedParams'
 }
 
 const createValidator = <T>(schema: z.ZodType<T>, source: RequestSource) => {
@@ -31,6 +32,10 @@ export const getValidated = <T>(req: Request): T => req.validated as T;
 export const validateQuery = <T>(schema: z.ZodType<T>) => createValidator(schema, 'query');
 
 export const getValidatedQuery = <T>(req: Request): T => req.validatedQuery as T;
+
+export const validatedParams = <T>(schema: z.ZodType<T>) => createValidator(schema, 'params');
+
+export const getValidatedParams = <T>(req: Request): T => req.validatedParams as T;
 
 
 const handleError = (error: unknown, next: NextFunction) => {

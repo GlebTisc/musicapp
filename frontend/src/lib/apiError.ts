@@ -1,8 +1,9 @@
 import { isAxiosError } from "axios";
 import { ApiErrorDetail, ApiErrorPayload } from "@/types";
+import { ProxyFailure } from "./proxyFetch";
 
 // type guard for the details array of an error
-const isValidDetail = (item: unknown): item is ApiErrorDetail => {
+export const isApiErrorDetail = (item: unknown): item is ApiErrorDetail => {
     return (
         typeof item === 'object' &&
         item !== null &&
@@ -10,6 +11,10 @@ const isValidDetail = (item: unknown): item is ApiErrorDetail => {
         'message' in item && typeof item.message === 'string'
     );
 };
+
+export const isApiErrorDetailPayload = (data: unknown): data is ApiErrorDetail[] => {
+    return Array.isArray(data) && data.length > 0 && data.every(isApiErrorDetail);
+}
 
 // typeguard for API error payload
 export const isApiErrorPayload = (payload: unknown): payload is ApiErrorPayload => {
@@ -19,13 +24,8 @@ export const isApiErrorPayload = (payload: unknown): payload is ApiErrorPayload 
 
     const obj = payload as Record<string, unknown>;
 
-    // field message
-    if (!('message' in obj) || typeof obj.message !== 'string') {
-        return false;
-    }
-
-    // field error
-    if ('error' in obj && obj.error !== undefined && typeof obj.error !== 'string') {
+    // error fields
+    if (!('message' in obj) || typeof obj.message !== 'string' || !('error' in obj) || typeof obj.error !== 'string') {
         return false;
     }
 
@@ -35,6 +35,18 @@ export const isApiErrorPayload = (payload: unknown): payload is ApiErrorPayload 
     }
 
     return true;
+};
+
+/**
+ * Typeguard to prove that response contains valid details
+ * 
+ * @param res 
+ * @returns 
+ */
+export const hasApiErrorDetails = (
+    res: ProxyFailure
+): res is ProxyFailure & { details: ApiErrorDetail[] } => {
+    return isApiErrorDetailPayload(res.details);
 };
 
 export function toApiError(error: unknown): ApiErrorPayload {
@@ -52,23 +64,24 @@ export function toApiError(error: unknown): ApiErrorPayload {
             // extract details
             const rawDetails = 'details' in data ? data.details : undefined;
             const safeDetails = Array.isArray(rawDetails)
-                ? rawDetails.filter(isValidDetail)
+                ? rawDetails.filter(isApiErrorDetail)
                 : undefined;
 
             return {
                 message: data.message,
-                error: 'error' in data && typeof data.error === 'string' ? data.error : undefined,
+                error: 'error' in data && typeof data.error === 'string' ? data.error : "UnknownError",
                 details: safeDetails,
             };
         }
 
         // connection error
         if (!error.response) {
-            return { message: 'Server isn\'t available. Please check your Internet connection.' };
+            return { error: "ConnectionError", message: 'Server isn\'t available. Please check your Internet connection.' };
         }
 
         // other HTTP error
         return {
+            error: "UnknownError",
             message: error.response.status === 401
                 ? 'Session has expired. Please login again'
                 : 'Internal server error',
@@ -77,8 +90,30 @@ export function toApiError(error: unknown): ApiErrorPayload {
 
     // JavaScript error
     if (error instanceof Error) {
-        return { message: error.message };
+        return { error: error.name, message: error.message };
     }
 
-    return { message: 'Unknown error' };
+    return { error: "UnknownError", message: 'Unknown error has occured' };
+}
+
+export function detailsToFieldErrors(
+    payload: { details?: ApiErrorDetail[]; message: string },
+    formErrorKey = '_form',
+    fallbackMessage = 'Validation error'
+): Record<string, string[]> {
+    const result: Record<string, string[]> = {};
+
+    const add = (key: string, message: string) => {
+        (result[key] ??= []).push(message);
+    };
+
+    if (payload.details?.length) {
+        for (const d of payload.details) {
+            add(d.field || formErrorKey, d.message);
+        }
+    } else {
+        add(formErrorKey, payload.message ?? fallbackMessage);
+    }
+
+    return result;
 }
