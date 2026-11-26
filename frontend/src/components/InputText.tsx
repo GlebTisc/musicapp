@@ -1,5 +1,5 @@
 import { SvgIconComponent } from "@mui/icons-material";
-import { TextField, TextFieldProps, InputAdornment, IconButton } from "@mui/material"
+import { TextField, TextFieldProps, InputAdornment, IconButton, SlotProps } from "@mui/material"
 
 type InputTextProps = TextFieldProps & {
     startIcon?: SvgIconComponent,
@@ -13,13 +13,21 @@ export default function InputText({
     endIcon: EndIcon,
     onStartClick,
     onEndClick,
+    slotProps,
     ...props
 }: InputTextProps) {
+    // slot props can be function - return object instead
+    const externalSlotProps = typeof slotProps?.input === 'function'
+        ? {}
+        : slotProps?.input;
+
     return (
         <TextField
             {...props}
             slotProps={{
+                ...slotProps,
                 input: {
+                    ...externalSlotProps,
                     startAdornment: StartIcon && (
                         <InputAdornment position="start">
                             {onStartClick
@@ -42,6 +50,10 @@ export default function InputText({
                             }
                         </InputAdornment>
                     )
+                },
+                formHelperText: {
+                    component: "div",
+                    ...slotProps?.formHelperText
                 }
             }}
         />

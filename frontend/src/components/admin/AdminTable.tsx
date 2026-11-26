@@ -6,13 +6,14 @@ import { Box, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Typo
 import Link from "next/link";
 import { DeleteButton } from "./DeleteButton";
 import { useAuth } from "@/hooks/auth";
+import AdminTableSkeleton from "../skeletons/AdminTableSkeleton";
 
 export default function AdminTable<T extends { _id: string }>({
     section, columns, rows
 }: {
     section: SectionKey, columns: Column<T>[], rows: T[]
 }) {
-    const { user } = useAuth();
+    const { user, isLoading } = useAuth();
     const currentUserId = user?._id;
 
     // if rows are empty - return the warning
@@ -24,6 +25,11 @@ export default function AdminTable<T extends { _id: string }>({
                 </Typography>
             </Box>
         );
+    }
+
+    // return skeleton if user haven't been loaded yet
+    if (isLoading && user === undefined) {
+        return <AdminTableSkeleton rows={10} columns={columns.length} />;
     }
 
     return (
@@ -58,15 +64,16 @@ export default function AdminTable<T extends { _id: string }>({
                             <IconButton LinkComponent={Link} href={`/admin/${section}/${String(row._id)}/edit`} color="secondary">
                                 <Edit />
                             </IconButton>
-                            <DeleteButton
+                            {!isSelf && <DeleteButton
                                 section={section}
                                 id={row._id}
                                 disabled={isSelf}
                                 title={isSelf ? "You can't delete your own account" : undefined}
-                            />
+                            />}
                         </TableCell>
                     </TableRow>
-                )})}
+                    )
+                })}
             </TableBody>
         </Table>
     );

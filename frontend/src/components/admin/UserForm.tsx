@@ -7,15 +7,20 @@ import InputText from '../InputText';
 import { Email, TextFormat } from '@mui/icons-material';
 import FieldErrors from '../FieldErrors';
 import InputPassword from '../auth/InputPassword';
+import { useAuth } from '@/hooks/auth';
 
 type Props = {
     action: (prev: FormState, formData: FormData) => Promise<FormState>;
     mode: 'create' | 'edit';
     initial?: { email?: string; username?: string; role?: 'user' | 'admin' };
+    editingId?: string
 };
 
-export default function UserForm({ action, mode, initial }: Props) {
+export default function UserForm({ action, mode, initial, editingId }: Props) {
     const [state, formAction, isPending] = useActionState(action, null);
+    const { user, isLoading } = useAuth();
+
+    const isSelf = mode === 'edit' && editingId !== null && !!user && user._id === editingId;
 
     return (
         <Box component="form" action={formAction} sx={{ width: '100%', maxWidth: 480, p: 2 }}>
@@ -59,6 +64,9 @@ export default function UserForm({ action, mode, initial }: Props) {
                     defaultValue={initial?.role ?? 'user'}
                     error={!!state?.fieldErrors?.role?.length}
                     helperText={<FieldErrors errors={state?.fieldErrors?.role} />}
+                    slotProps={{
+                        htmlInput: { readOnly: isLoading || isSelf }
+                    }}
                     fullWidth
                 >
                     <MenuItem value="user">User</MenuItem>
@@ -71,7 +79,7 @@ export default function UserForm({ action, mode, initial }: Props) {
                     disabled={isPending}
                     sx={{ alignSelf: 'flex-end' }}
                 >
-                    {isPending ? 'Saving...' : mode === 'create' ? 'Create' : 'Save'}
+                    {isPending ? 'Saving...' : (mode === 'create' ? 'Create' : 'Save')}
                 </Button>
             </Stack>
         </Box>

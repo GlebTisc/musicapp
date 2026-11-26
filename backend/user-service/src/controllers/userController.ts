@@ -5,6 +5,7 @@ import { cookieOptions } from "src/utils/cookies";
 import { getValidated } from "src/middleware/validate";
 import * as userService from "../services/userService";
 import { CreateUserDTO, type GetUserDTO, type GetUserByIdDTO, UpdateUserDTO } from "src/utils/schemas";
+import { ForbiddenError } from "src/utils/errors";
 
 /**
  * Get user info
@@ -85,6 +86,11 @@ export const update = catchAsync(
     async (req: Request, res: Response) => {
         const { id } = getValidated.params<GetUserByIdDTO>(req);
         const validatedData = getValidated.body<UpdateUserDTO>(req);
+
+        if (id === req.user?._id && validatedData.role !== req.user.role) {
+            throw new ForbiddenError("You can't change your own role");
+        }
+
         const result = await userService.updateUser(id, validatedData);
         res.status(200).json({ status: 'success', data: result })
     }
@@ -93,6 +99,11 @@ export const update = catchAsync(
 export const deleteUser = catchAsync(
     async (req: Request, res: Response) => {
         const { id } = getValidated.params<GetUserByIdDTO>(req);
+
+        if (req.user?._id === id) {
+            throw new ForbiddenError("You can't delete your own account");
+        }
+
         await userService.deleteUser(id, req.user?._id);
         res.status(200).json({ status: 'success' });
     }

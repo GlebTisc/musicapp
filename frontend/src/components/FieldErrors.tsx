@@ -1,4 +1,4 @@
-import { Box, colors } from "@mui/material";
+import { Box } from "@mui/material";
 
 const errorStyle = {
     fontSize: "0.75rem",
@@ -10,22 +10,18 @@ export default function FieldErrors({ errors }: { errors?: string[] }) {
     // if no errors given - return
     if (!errors?.length) return null;
 
-    // if array contains only 1 error - show it
-    if (errors.length === 1) {
-        return <Box sx={errorStyle}> {errors[0]} </Box>
-    }
-
     return (
         <Box
-            component="ul"
+            component="span"
             sx={{
                 m: 0,
                 pl: 2,
+                display: "block",
                 ...errorStyle
             }}
         >
             {errors.map((error, index) => (
-                <li key={index}>{error}</li>
+                <Box key={`${index}~${error}`} component="span" sx={{ display: "block" }}>{error}</Box>
             ))}
         </Box>
     );

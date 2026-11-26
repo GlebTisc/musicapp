@@ -35,6 +35,7 @@ export default async function EditUserPage({
                 action={action}
                 mode="edit"
                 initial={{ email: user.email, username: user.username, role: user.role }}
+                editingId={id}
             />
         </Box>
     );

@@ -24,7 +24,7 @@ class EnsureRequestsJson
         }
 
         // check if request has JSON format
-        if (!$request->isMethod('GET') && !$request->isJson()) {
+        if (!in_array($request->getMethod(), ['GET', 'DELETE']) && !$request->isJson()) {
             return response()->json([
                 "error" => "UnsupportedMediaType",
                 "message" => "Only JSON requests are allowed"

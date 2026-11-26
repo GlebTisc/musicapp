@@ -75,8 +75,6 @@ export async function proxyFetch<TSchema extends z.ZodType | undefined = undefin
         };
     }
 
-    console.error(json)
-
     if (!res.ok) {
         return { ok: false, ...parseApiError(json, res.status) };
     }

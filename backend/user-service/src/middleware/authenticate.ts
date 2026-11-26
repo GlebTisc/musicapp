@@ -31,7 +31,7 @@ export const authenticate = catchAsync(
         }
 
         req.user = {
-            id: currentUser._id.toString(),
+            _id: currentUser._id.toString(),
             username: currentUser.username,
             email: currentUser.email,
             role: currentUser.role,

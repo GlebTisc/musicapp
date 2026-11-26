@@ -1,6 +1,6 @@
 import UserModel from '../models/User';
 import { UserResponse, extractUserFields, validateUserFields } from './authService';
-import { ForbiddenError, NotFoundError } from '../utils/errors';
+import { NotFoundError } from '../utils/errors';
 import { GetUserDTO, RegisterDTO, UpdateUserDTO } from 'src/utils/schemas';
 
 /**
@@ -59,14 +59,6 @@ export const updateUser = async (
 };
 
 export const deleteUser = async (id: string, userId: string | undefined): Promise<void> => {
-    if (!userId) {
-        throw new ForbiddenError("Unauthorized");
-    }
-
-    if (id === userId) {
-        throw new ForbiddenError("You can't only delete your own account");
-    }
-
     const user = await UserModel.findByIdAndDelete(id);
 
     if (!user) {
