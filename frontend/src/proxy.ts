@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify, importSPKI, JWTPayload } from 'jose';
-
-const BACKEND_URL = process.env.BACKEND_URL ?? 'http://api-gateway:8000';
-const REFRESH_ENDPOINT = 'api/auth/refresh';
+import { tryRefreshToken, verifyToken } from './lib/jwt';
 
 const protectedPaths = ['/profile'];
 const adminPaths = ['/admin'];
@@ -11,49 +8,6 @@ const authPaths = ['/login', '/register'];
 
 const matches = (pathname: string, paths: string[]) =>
     paths.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-
-let publicKeyPromise: Promise<CryptoKey> | undefined;
-
-function getPublicKey(): Promise<CryptoKey> {
-    if (!publicKeyPromise) {
-        const raw = process.env.JWT_PUBLIC_KEY;
-        if (!raw) {
-            return Promise.reject(new Error('JWT_PUBLIC_KEY is not set'));
-        }
-
-        publicKeyPromise = importSPKI(atob(raw), 'RS256');
-    }
-
-    return publicKeyPromise;
-}
-
-async function verifyToken(token: string): Promise<JWTPayload | null> {
-    try {
-        const key = await getPublicKey();
-        const { payload } = await jwtVerify(token, key, { algorithms: ['RS256'] });
-        return payload;
-    } catch (error) {
-        return null;
-    }
-}
-
-async function tryRefresh(request: NextRequest): Promise<string[] | null> {
-    const refreshToken = request.cookies.get('refreshToken')?.value;
-    if (!refreshToken) return null;
-
-    try {
-        const res = await fetch(`${BACKEND_URL}/${REFRESH_ENDPOINT}`, {
-            method: 'POST',
-            headers: { Cookie: `refreshToken=${refreshToken}`, Accept: 'application/json' },
-        });
-        if (!res.ok) return null;
-
-        const setCookies = res.headers.getSetCookie?.() ?? [];
-        return setCookies.length > 0 ? setCookies : null;
-    } catch {
-        return null;
-    }
-}
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -72,12 +26,12 @@ export async function proxy(request: NextRequest) {
 
     // if access token expired, but refresh token is ok - try to refresh
     if (!payload && needsAuth) {
-        const setCookies = await tryRefresh(request);
+        const refreshResult = await tryRefreshToken(request);
 
-        if (setCookies) {
+        if (refreshResult) {
             // retry the request with new cookies
             const response = NextResponse.redirect(request.url);
-            for (const c of setCookies) {
+            for (const c of refreshResult.setCookies) {
                 response.headers.append('Set-Cookie', c);
             }
             return response;

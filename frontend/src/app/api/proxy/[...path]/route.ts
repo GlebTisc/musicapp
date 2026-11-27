@@ -1,44 +1,9 @@
+import { checkCsrf } from '@/lib/csrf';
+import { BACKEND_URL, SKIP_REFRESH_PATHS, tryRefreshToken } from '@/lib/jwt';
 import { NextRequest, NextResponse } from 'next/server';
-
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000';
-const REFRESH_ENDPOINT = 'api/auth/refresh';
-
-// endpoints that shouldn't trigger token refresh
-const SKIP_REFRESH_PATHS = [REFRESH_ENDPOINT, 'api/auth/login', 'api/auth/register'];
 
 function pathMatches(apiPath: string, prefix: string): boolean {
     return apiPath === prefix || apiPath.startsWith(`${prefix}/`);
-}
-
-export function applySetCookies(cookieHeader: string, setCookies: string[]): string {
-    const cookies = new Map<string, string>();
-
-    for (const pair of cookieHeader.split(';')) {
-        const trimmed = pair.trim();
-        if (!trimmed) continue;
-        const eq = trimmed.indexOf('=');
-        if (eq === -1) continue;
-        cookies.set(trimmed.slice(0, eq), trimmed.slice(eq + 1));
-    }
-
-    for (const sc of setCookies) {
-        const firstPart = sc.split(';')[0];
-        const eq = firstPart.indexOf('=');
-
-        if (eq === -1) continue;
-
-        const name = firstPart.slice(0, eq).trim();
-        const value = firstPart.slice(eq + 1);
-
-        // remove cookie
-        if (!value || /Max-Age=0\b/i.test(sc) || /Expires=Thu, 01 Jan 1970/i.test(sc)) {
-            cookies.delete(name);
-        } else {
-            cookies.set(name, value);
-        }
-    }
-
-    return Array.from(cookies.entries()).map(([k, v]) => `${k}=${v}`).join('; ');
 }
 
 /**
@@ -47,38 +12,6 @@ export function applySetCookies(cookieHeader: string, setCookies: string[]): str
 function buildCookieHeader(request: NextRequest): string {
     const cookieList = request.cookies.getAll();
     return cookieList.map(c => `${c.name}=${c.value}`).join('; ');
-}
-
-/**
- * Try to update token via refresh endpoint
- */
-async function tryRefreshToken(request: NextRequest): Promise<{
-    setCookies: string[];
-    cookieHeader: string;
-} | null> {
-    const refreshToken = request.cookies.get('refreshToken')?.value;
-    if (!refreshToken) return null;
-
-    try {
-        const refreshResponse = await fetch(`${BACKEND_URL}/${REFRESH_ENDPOINT}`, {
-            method: 'POST',
-            headers: { Cookie: `refreshToken=${refreshToken}`, Accept: 'application/json' },
-        });
-
-        if (!refreshResponse.ok) return null;
-
-        const setCookies = refreshResponse.headers.getSetCookie?.() ?? [];
-        if (setCookies.length === 0) return null;
-
-        const originalCookieHeader = request.cookies.getAll()
-            .map((c) => `${c.name}=${c.value}`).join('; ');
-        const cookieHeader = applySetCookies(originalCookieHeader, setCookies);
-
-        return { setCookies, cookieHeader };
-    } catch (e) {
-        console.error('Token refresh failed:', e);
-        return null;
-    }
 }
 
 /**
@@ -111,6 +44,10 @@ async function handleProxy(
     request: NextRequest,
     context: { params: Promise<{ path: string[] }> },
 ): Promise<NextResponse> {
+    // check csrf
+    const csrfError = checkCsrf(request);
+    if (csrfError) return csrfError;
+
     const { path } = await context.params;
     const apiPath = path.join('/');
     const url = `${BACKEND_URL}/${apiPath}${request.nextUrl.search}`;

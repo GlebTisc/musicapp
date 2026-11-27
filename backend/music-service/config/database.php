@@ -32,6 +32,19 @@ return [
 
     'connections' => [
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => sprintf(
+                'mongodb://%s:%s@%s:%s/%s?authSource=admin',
+                env('DB_USERNAME', 'root'),
+                env('DB_PASSWORD', ''),
+                env('DB_HOST', 'mongo'),
+                env('DB_PORT', '27017'),
+                env('DB_DATABASE', 'music_db'),
+            ),
+            'database' => env('DB_DATABASE', 'music_db'),
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
@@ -149,7 +162,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')) . '-database-'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

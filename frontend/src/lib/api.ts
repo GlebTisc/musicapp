@@ -10,10 +10,32 @@ export const api: AxiosInstance = axios.create({
     baseURL: '/api/proxy',
     withCredentials: true,
     headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
 })
+
+
+/**
+ * Request interceptor.
+ * 
+ * Adds necessary headers to the request (including CSRF protection)
+ */
+api.interceptors.request.use(request => {
+    const method = (request.method ?? 'get').toLowerCase();
+
+    // add Content-Type application/json by default
+    if (!(request.data instanceof FormData) && !request.headers['Content-Type']) {
+        request.headers['Content-Type'] = 'application/json;'
+    }
+
+    // add custom header on state changing requests
+    if (['post', 'put', 'patch', 'delete'].includes(method)) {
+        request.headers['X-Requested-With'] = 'XMLHttpRequest';
+    }
+
+    return request;
+})
+
 
 /**
  * Response interceptor.

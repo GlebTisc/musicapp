@@ -8,6 +8,7 @@ import { Email, TextFormat } from '@mui/icons-material';
 import FieldErrors from '../FieldErrors';
 import InputPassword from '../auth/InputPassword';
 import { useAuth } from '@/hooks/auth';
+import ButtonOutline from '../ButtonOutline';
 
 type Props = {
     action: (prev: FormState, formData: FormData) => Promise<FormState>;
@@ -72,7 +73,9 @@ export default function UserForm({ action, mode, initial, editingId }: Props) {
                     <MenuItem value="user">User</MenuItem>
                     <MenuItem value="admin">Admin</MenuItem>
                 </InputText>
-
+                <ButtonOutline href='/admin/users'>
+                    Cancel
+                </ButtonOutline>
                 <Button
                     type="submit"
                     variant="contained"
